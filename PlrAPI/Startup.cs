@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MirageArchiveAPI.Models;
+using PlrAPI.Models;
 
-namespace MirageArchiveAPI
+namespace PlrAPI
 {
     public class Startup
     {
@@ -22,6 +22,9 @@ namespace MirageArchiveAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationContext>();
+            services.AddControllers();
+
+            services.AddRouting(options => options.LowercaseUrls = true);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,10 +45,13 @@ namespace MirageArchiveAPI
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                endpoints.MapControllers();
+            });
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.StatusCode = 404;
+                await context.Response.WriteAsync("Error 404");
             });
         }
     }

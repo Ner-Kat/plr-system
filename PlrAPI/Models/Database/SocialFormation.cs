@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 
-namespace MirageArchiveAPI.Models.Database
+namespace PlrAPI.Models.Database
 {
     /// <summary>
     /// Класс, описывающий общественное формирование:
@@ -14,13 +14,13 @@ namespace MirageArchiveAPI.Models.Database
     {
         // Ключ в БД и уникальный ID общественного формирования.
         [Key]
-        public int Id;
+        public int Id { get; set; }
 
         // Название общественного формирования.
         [Required]
-        public string Name;
+        public string Name { get; set; }
 
         // Описание общественного формирования.
-        public string Desc;
+        public string Desc { get; set; }
     }
 }
