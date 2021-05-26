@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 
-namespace MirageArchiveAPI.Models.Database
+namespace PlrAPI.Models.Database
 {
     /// <summary>
     /// Класс, описывающий локацию:
@@ -14,19 +14,28 @@ namespace MirageArchiveAPI.Models.Database
     {
         // Ключ в БД и уникальный ID локации.
         [Key]
-        public int Id;
+        public int Id { get; set; }
 
         // Название локации.
         [Required]
-        public string Name;
+        public string Name { get; set; }
 
         // Описание локации.
-        public string Desc;
+        public string Desc { get; set; }
 
         // "Родительская" локация по отношению к данной.
-        public Location PartOfLoc;
+        public int? ParentLocationId { get; set; }
+        public virtual Location Parent { get; set; }
 
         // Локации, которые являются частями данной.
-        public Location[] ContainsLocs;
+        public virtual ICollection<Location> Children { get; set; }
+
+        /*
+        // "Родительская" локация по отношению к данной.
+        public Location PartOfLoc { get; set; }
+
+        // Локации, которые являются частями данной.
+        public Location[] ContainsLocs { get; set; }
+        */
     }
 }

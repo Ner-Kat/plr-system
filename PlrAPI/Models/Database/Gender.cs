@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 
-namespace MirageArchiveAPI.Models.Database
+namespace PlrAPI.Models.Database
 {
     /// <summary>
     /// Класс, описывающий пол существа.
@@ -13,10 +13,10 @@ namespace MirageArchiveAPI.Models.Database
     {
         // Ключ в БД и уникальный ID пола.
         [Key]
-        public int Id;
+        public int Id { get; set; }
 
         // Название пола.
         [Required]
-        public string Name;
+        public string Name { get; set; }
     }
 }

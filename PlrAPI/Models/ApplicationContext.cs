@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using MirageArchiveAPI.Models.Database;
+using PlrAPI.Models.Database;
 
-namespace MirageArchiveAPI.Models
+namespace PlrAPI.Models
 {
     public class ApplicationContext : DbContext
     {
