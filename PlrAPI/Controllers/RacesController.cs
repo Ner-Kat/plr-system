@@ -37,7 +37,7 @@ namespace PlrAPI.Controllers
             _db.Races.Add(race);
             _db.SaveChanges();
 
-            return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            return Ok();
         }
     }
 }
