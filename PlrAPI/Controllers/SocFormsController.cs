@@ -46,10 +46,17 @@ namespace PlrAPI.Controllers
         [HttpPost]
         public IActionResult Add(SocialFormation socForm)
         {
-            _db.SocialFormations.Add(socForm);
-            _db.SaveChanges();
+            try
+            {
+                _db.SocialFormations.Add(socForm);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]
@@ -67,32 +74,53 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public IActionResult Remove(SocialFormation socForm)
         {
-            _db.Remove(socForm);
-            _db.SaveChanges();
+            try
+            {
+                _db.Remove(socForm);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
-            SocialFormation socForm = new SocialFormation() { Id = id };
-            _db.Attach(socForm);
-            _db.Remove(socForm);
-            _db.SaveChanges();
+            try
+            {
+                SocialFormation socForm = new SocialFormation() { Id = id };
+                _db.Attach(socForm);
+                _db.Remove(socForm);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPost]
         public IActionResult Change(SocialFormation socForm)
         {
-            SocialFormation oldSocForm = _db.SocialFormations.Where(r => r.Id == socForm.Id).First();
-            oldSocForm.Name = socForm.Name;
-            oldSocForm.Desc = socForm.Desc;
-            _db.SaveChanges();
+            try
+            {
+                SocialFormation oldSocForm = _db.SocialFormations.Where(r => r.Id == socForm.Id).First();
+                oldSocForm.Name = socForm.Name;
+                oldSocForm.Desc = socForm.Desc;
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
     }
 }
