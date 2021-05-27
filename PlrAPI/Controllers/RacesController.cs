@@ -25,7 +25,7 @@ namespace PlrAPI.Controllers
         {
             if (count.HasValue)
             {
-                return new JsonResult(races.Where(r => r.Id >= from).Take(count.Value).ToList());
+                return new JsonResult(races.TakeWhile((r, index) => index >= from && index < from + count).ToList());
             }
 
             return new JsonResult(races.ToList());
@@ -55,7 +55,7 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult GetRace(int id)
         {
-            return new JsonResult(_db.Races.ElementAt(id));
+            return new JsonResult(_db.Races.Where(r => r.Id == id).First());
         }
 
         [HttpGet]
@@ -79,6 +79,17 @@ namespace PlrAPI.Controllers
             Race race = new Race() { Id = id };
             _db.Attach(race);
             _db.Remove(race);
+            _db.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPost]
+        public IActionResult Change(Race race)
+        {
+            Race oldRace = _db.Races.Where(r => r.Id == race.Id).First();
+            oldRace.Name = race.Name;
+            oldRace.Desc = race.Desc;
             _db.SaveChanges();
 
             return Ok();
