@@ -20,21 +20,65 @@ namespace PlrAPI.Controllers
             _db = appContext;
         }
 
-        [HttpGet]
-        public JsonResult List(int? count, int? from = 0)
+        [NonAction]
+        public JsonResult GetList(IQueryable<Race> races, int? count, int? from)
         {
             if (count.HasValue)
             {
-                return new JsonResult(_db.Races.Where(r => r.Id >= from && r.Id < from + count).ToList());
+                return new JsonResult(races.Where(r => r.Id >= from).Take(count.Value).ToList());
             }
 
-            return new JsonResult(_db.Races.ToList());
+            return new JsonResult(races.ToList());
+        }
+
+        [HttpGet]
+        public JsonResult List(int? count, int? from = 0)
+        {
+            return GetList(_db.Races, count, from);
+        }
+
+        [HttpGet]
+        public JsonResult ListOrderedByNames(int? count, int? from = 0)
+        {
+            return GetList(_db.Races.OrderBy(r => r.Name), count, from);
         }
 
         [HttpPost]
         public IActionResult Add(Race race)
         {
             _db.Races.Add(race);
+            _db.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpGet]
+        public JsonResult GetRace(int id)
+        {
+            return new JsonResult(_db.Races.ElementAt(id));
+        }
+
+        [HttpGet]
+        public JsonResult GetRaceByName(string name)
+        {
+            return new JsonResult(_db.Races.Where(r => r.Name == name).ToList());
+        }
+
+        [HttpGet]
+        public IActionResult Remove(Race race)
+        {
+            _db.Remove(race);
+            _db.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpGet]
+        public IActionResult RemoveById(int id)
+        {
+            Race race = new Race() { Id = id };
+            _db.Attach(race);
+            _db.Remove(race);
             _db.SaveChanges();
 
             return Ok();
