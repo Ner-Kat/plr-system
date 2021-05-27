@@ -46,10 +46,17 @@ namespace PlrAPI.Controllers
         [HttpPost]
         public IActionResult Add(Race race)
         {
-            _db.Races.Add(race);
-            _db.SaveChanges();
+            try
+            {
+                _db.Races.Add(race);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]
@@ -67,32 +74,53 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public IActionResult Remove(Race race)
         {
-            _db.Remove(race);
-            _db.SaveChanges();
+            try
+            {
+                _db.Remove(race);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
-            Race race = new Race() { Id = id };
-            _db.Attach(race);
-            _db.Remove(race);
-            _db.SaveChanges();
+            try
+            {
+                Race race = new Race() { Id = id };
+                _db.Attach(race);
+                _db.Remove(race);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPost]
         public IActionResult Change(Race race)
         {
-            Race oldRace = _db.Races.Where(r => r.Id == race.Id).First();
-            oldRace.Name = race.Name;
-            oldRace.Desc = race.Desc;
-            _db.SaveChanges();
+            try
+            {
+                Race oldRace = _db.Races.Where(r => r.Id == race.Id).First();
+                oldRace.Name = race.Name;
+                oldRace.Desc = race.Desc;
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
     }
 }

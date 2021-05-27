@@ -46,10 +46,17 @@ namespace PlrAPI.Controllers
         [HttpPost]
         public IActionResult Add(Location loc)
         {
-            _db.Locations.Add(loc);
-            _db.SaveChanges();
+            try
+            {
+                _db.Locations.Add(loc);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]
@@ -67,35 +74,56 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public IActionResult Remove(Location loc)
         {
-            _db.Remove(loc);
-            _db.SaveChanges();
+            try
+            {
+                _db.Remove(loc);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
-            Location loc = new Location() { Id = id };
-            _db.Attach(loc);
-            _db.Remove(loc);
-            _db.SaveChanges();
+            try
+            {
+                Location loc = new Location() { Id = id };
+                _db.Attach(loc);
+                _db.Remove(loc);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPost]
         public IActionResult Change(Location loc)
         {
-            Location oldLoc = _db.Locations.Where(r => r.Id == loc.Id).First();
-            oldLoc.Name = loc.Name;
-            oldLoc.Desc = loc.Desc;
-            oldLoc.Parent = loc.Parent;
-            oldLoc.ParentLocationId = loc.ParentLocationId;
-            oldLoc.Children = loc.Children;
-            _db.SaveChanges();
+            try
+            {
+                Location oldLoc = _db.Locations.Where(r => r.Id == loc.Id).First();
+                oldLoc.Name = loc.Name;
+                oldLoc.Desc = loc.Desc;
+                oldLoc.Parent = loc.Parent;
+                oldLoc.ParentLocationId = loc.ParentLocationId;
+                oldLoc.Children = loc.Children;
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]

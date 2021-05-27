@@ -58,10 +58,17 @@ namespace PlrAPI.Controllers
         [HttpPost]
         public IActionResult Add(Character character)
         {
-            _db.Characters.Add(character);
-            _db.SaveChanges();
+            try
+            {
+                _db.Characters.Add(character);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]
@@ -79,32 +86,53 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public IActionResult Remove(Character character)
         {
-            _db.Remove(character);
-            _db.SaveChanges();
+            try
+            {
+                _db.Remove(character);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
-            Character character = new Character() { Id = id };
-            _db.Attach(character);
-            _db.Remove(character);
-            _db.SaveChanges();
+            try
+            {
+                Character character = new Character() { Id = id };
+                _db.Attach(character);
+                _db.Remove(character);
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPost]
         public IActionResult Change(Character character)
         {
-            Character oldCharacter = _db.Characters.Where(ch => ch.Id == character.Id).First();
-            oldCharacter.Name = character.Name;
-            oldCharacter.Desc = character.Desc;
-            _db.SaveChanges();
+            try
+            {
+                Character oldCharacter = _db.Characters.Where(ch => ch.Id == character.Id).First();
+                oldCharacter.Name = character.Name;
+                oldCharacter.Desc = character.Desc;
+                _db.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
     }
 }
