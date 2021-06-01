@@ -6,11 +6,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using PlrAPI.Models;
 using PlrAPI.Models.Database;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PlrAPI.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class LocationsController : ControllerBase
     {
         private ApplicationContext _db;
@@ -62,7 +64,7 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult GetLocation(int id)
         {
-            return new JsonResult(_db.Locations.Where(loc => loc.Id == id).First());
+            return new JsonResult(_db.Locations.Where(loc => loc.Id == id).FirstOrDefault());
         }
 
         [HttpGet]
@@ -110,7 +112,7 @@ namespace PlrAPI.Controllers
         {
             try
             {
-                Location oldLoc = _db.Locations.Where(r => r.Id == loc.Id).First();
+                Location oldLoc = _db.Locations.Where(r => r.Id == loc.Id).FirstOrDefault();
                 oldLoc.Name = loc.Name;
                 oldLoc.Desc = loc.Desc;
                 oldLoc.Parent = loc.Parent;
@@ -137,14 +139,14 @@ namespace PlrAPI.Controllers
         {
             return GetLocationChildrenById(loc.Id);
 
-            /* Location parentLoc = _db.Locations.Where(dbLoc => dbLoc.Id == loc.Id).First();
+            /* Location parentLoc = _db.Locations.Where(dbLoc => dbLoc.Id == loc.Id).FirstOrDefault();
             return new JsonResult(parentLoc.Children.ToList()); */
         }
 
         [HttpGet]
         public JsonResult GetLocationChildrenById(int id)
         {
-            Location parentLoc = _db.Locations.Where(dbLoc => dbLoc.Id == id).First();
+            Location parentLoc = _db.Locations.Where(dbLoc => dbLoc.Id == id).FirstOrDefault();
             return new JsonResult(parentLoc.Children.ToList());
         }
     }

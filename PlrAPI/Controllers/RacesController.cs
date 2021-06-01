@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PlrAPI.Models;
 using PlrAPI.Models.Database;
@@ -11,6 +12,7 @@ namespace PlrAPI.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class RacesController : ControllerBase
     {
         private ApplicationContext _db;
@@ -62,7 +64,7 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult GetRace(int id)
         {
-            return new JsonResult(_db.Races.Where(r => r.Id == id).First());
+            return new JsonResult(_db.Races.Where(r => r.Id == id).FirstOrDefault());
         }
 
         [HttpGet]
@@ -110,7 +112,7 @@ namespace PlrAPI.Controllers
         {
             try
             {
-                Race oldRace = _db.Races.Where(r => r.Id == race.Id).First();
+                Race oldRace = _db.Races.Where(r => r.Id == race.Id).FirstOrDefault();
                 oldRace.Name = race.Name;
                 oldRace.Desc = race.Desc;
                 _db.SaveChanges();

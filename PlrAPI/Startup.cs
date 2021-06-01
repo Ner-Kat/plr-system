@@ -8,6 +8,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PlrAPI.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using PlrAPI.Systems;
+using Microsoft.AspNetCore.CookiePolicy;
 
 namespace PlrAPI
 {
@@ -21,7 +25,38 @@ namespace PlrAPI
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    // Использование SSL для передачи токена
+                    options.RequireHttpsMetadata = true;
+
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        // Проверка издателя токена
+                        ValidateIssuer = true,
+                        ValidIssuer = AuthOptions.Issuer,
+
+                        // Проверка пользователя токена
+                        ValidateAudience = true,
+                        ValidAudience = AuthOptions.Audience,
+
+                        // Проверка времени жизни токена
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero,
+
+                        // Проверка ключа
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey()
+
+                    };
+                });
+
             services.AddDbContext<ApplicationContext>();
+            services.AddTransient<AuthUtils>();
+
             services.AddControllers();
 
             services.AddRouting(options => options.LowercaseUrls = true);
@@ -42,6 +77,12 @@ namespace PlrAPI
             }
 
             app.UseHttpsRedirection();
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                MinimumSameSitePolicy = SameSiteMode.Strict,
+                HttpOnly = HttpOnlyPolicy.Always,
+                Secure = CookieSecurePolicy.Always
+            });
 
             app.UseRouting();
 
@@ -51,15 +92,21 @@ namespace PlrAPI
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "PlrAPI v1.0");
             });
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.Use(async (context, next) =>
             {
-                context.Response.StatusCode = 404;
-                await context.Response.WriteAsync("Error 404");
+                context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+                context.Response.Headers.Add("X-Xss-Protection", "1");
+                context.Response.Headers.Add("X-Frame-Options", "DENY");
+
+                await next.Invoke();
+            });
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
             });
         }
     }
