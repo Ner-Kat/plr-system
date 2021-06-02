@@ -45,6 +45,7 @@ namespace PlrAPI.Controllers
             return GetList(_db.Races.OrderBy(r => r.Name), count, from);
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Add(Race race)
         {
@@ -73,6 +74,7 @@ namespace PlrAPI.Controllers
             return new JsonResult(_db.Races.Where(r => r.Name == name).ToList());
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult Remove(Race race)
         {
@@ -89,6 +91,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
@@ -107,6 +110,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Change(Race race)
         {

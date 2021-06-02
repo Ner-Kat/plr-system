@@ -57,6 +57,7 @@ namespace PlrAPI.Controllers
             return GetList(_db.Characters.OrderBy(ch => ch.LocBirth.Name), count, from);
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Add(Character character)
         {
@@ -85,6 +86,7 @@ namespace PlrAPI.Controllers
             return new JsonResult(_db.Characters.Where(ch => ch.Name == name).ToList());
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult Remove(Character character)
         {
@@ -101,6 +103,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
@@ -119,6 +122,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Change(Character character)
         {

@@ -60,6 +60,10 @@ namespace PlrAPI
                 {
                     policy.RequireRole(Roles.AllRoles());
                 });
+                options.AddPolicy("ForEditors", policy =>
+                {
+                    policy.RequireRole(Roles.Editor, Roles.Admin, Roles.SuperAdmin);
+                });
                 options.AddPolicy("ForAdmins", policy =>
                 {
                     policy.RequireRole(Roles.Admin, Roles.SuperAdmin);

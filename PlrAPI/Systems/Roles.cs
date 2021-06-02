@@ -8,6 +8,7 @@ namespace PlrAPI.Systems
     public class Roles
     {
         public const string User = "user";
+        public const string Editor = "editor";
         public const string Admin = "admin";
         public const string SuperAdmin = "superadmin";
 
@@ -15,7 +16,7 @@ namespace PlrAPI.Systems
         {
             string[] roles = new string[]
             {
-                User, Admin, SuperAdmin
+                User, Editor, Admin, SuperAdmin
             };
 
             return roles;

@@ -45,6 +45,7 @@ namespace PlrAPI.Controllers
             return GetList(_db.SocialFormations.OrderBy(sf => sf.Name), count, from);
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Add(SocialFormation socForm)
         {
@@ -73,6 +74,7 @@ namespace PlrAPI.Controllers
             return new JsonResult(_db.SocialFormations.Where(sf => sf.Name == name).ToList());
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult Remove(SocialFormation socForm)
         {
@@ -89,6 +91,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
@@ -107,6 +110,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Change(SocialFormation socForm)
         {
