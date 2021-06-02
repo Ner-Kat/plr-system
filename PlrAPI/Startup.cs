@@ -54,6 +54,22 @@ namespace PlrAPI
                     };
                 });
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("ForRegistered", policy =>
+                {
+                    policy.RequireRole(Roles.AllRoles());
+                });
+                options.AddPolicy("ForAdmins", policy =>
+                {
+                    policy.RequireRole(Roles.Admin, Roles.SuperAdmin);
+                });
+                options.AddPolicy("ForSuperAdmin", policy =>
+                {
+                    policy.RequireRole(Roles.SuperAdmin);
+                });
+            });
+
             services.AddDbContext<ApplicationContext>();
             services.AddTransient<AuthUtils>();
 

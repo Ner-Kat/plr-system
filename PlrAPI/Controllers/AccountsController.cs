@@ -52,10 +52,8 @@ namespace PlrAPI.Controllers
                     Login = login,
                     Password = hashedPassword,
                     Salt = Convert.ToBase64String(salt),
-                    Role = "user"
+                    Role = Roles.User
                 };
-
-                // _logger.LogInformation($"Added new user:\n\tlogin='{login}',\n\tpass='{password}',\n\tsalt='{user.Salt}',\n\thashedPass='{hashedPassword}'");
 
                 _db.Users.Add(user);
                 _db.SaveChanges();
