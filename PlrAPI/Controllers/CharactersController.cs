@@ -6,11 +6,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using PlrAPI.Models;
 using PlrAPI.Models.Database;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PlrAPI.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class CharactersController : ControllerBase
     {
         private ApplicationContext _db;
@@ -55,6 +57,7 @@ namespace PlrAPI.Controllers
             return GetList(_db.Characters.OrderBy(ch => ch.LocBirth.Name), count, from);
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Add(Character character)
         {
@@ -74,7 +77,7 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult GetCharacter(int id)
         {
-            return new JsonResult(_db.Characters.Where(ch => ch.Id == id).First());
+            return new JsonResult(_db.Characters.Where(ch => ch.Id == id).FirstOrDefault());
         }
 
         [HttpGet]
@@ -83,6 +86,7 @@ namespace PlrAPI.Controllers
             return new JsonResult(_db.Characters.Where(ch => ch.Name == name).ToList());
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult Remove(Character character)
         {
@@ -99,6 +103,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
@@ -117,12 +122,13 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Change(Character character)
         {
             try
             {
-                Character oldCharacter = _db.Characters.Where(ch => ch.Id == character.Id).First();
+                Character oldCharacter = _db.Characters.Where(ch => ch.Id == character.Id).FirstOrDefault();
                 oldCharacter.Name = character.Name;
                 oldCharacter.Desc = character.Desc;
                 _db.SaveChanges();
