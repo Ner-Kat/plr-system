@@ -73,8 +73,6 @@ namespace PlrAPI.Systems
             {
                 string hashedPassword = GetHashedPass(password, Convert.FromBase64String(user.Salt));
 
-                // _logger.LogInformation($"Auth user:\n\tlogin='{login}',\n\tpass='{password}',\n\tsalt='{user.Salt}',\n\thashedPass='{hashedPassword}'");
-                
                 if (user.Password != hashedPassword)
                 {
                     return null;
