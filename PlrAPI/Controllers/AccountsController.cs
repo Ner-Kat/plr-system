@@ -33,7 +33,6 @@ namespace PlrAPI.Controllers
             _logger = logger;
         }
 
-
         [HttpPost]
         public IActionResult Register(string login, string password)
         {
@@ -156,18 +155,25 @@ namespace PlrAPI.Controllers
             return new JsonResult(users.ToList());
         }
 
-        [Authorize]
+        [Authorize(Policy = "ForAdmins")]
         [HttpGet]
         public JsonResult GetUsersList(int? count, int? from = 0)
         {
             return GetList(_db.Users, count, from);
         }
 
-        [Authorize]
+        [Authorize(Policy = "ForAdmins")]
         [HttpGet]
         public IActionResult ChangeUserRole(int userId, string role)
         {
             User user = _authUtils.GetUserById(userId);
+            string currentRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if ((user.Role == Roles.Admin && currentRole != Roles.SuperAdmin) || user.Role == Roles.SuperAdmin)
+            {
+                return BadRequest("Role is not be able to change");
+            }
+
             user.Role = role;
             _db.SaveChanges();
 

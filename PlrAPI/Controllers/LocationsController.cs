@@ -45,6 +45,7 @@ namespace PlrAPI.Controllers
             return GetList(_db.Locations.OrderBy(r => r.Name), count, from);
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Add(Location loc)
         {
@@ -73,6 +74,7 @@ namespace PlrAPI.Controllers
             return new JsonResult(_db.Locations.Where(loc => loc.Name == name).ToList());
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult Remove(Location loc)
         {
@@ -89,6 +91,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
@@ -107,6 +110,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Change(Location loc)
         {
