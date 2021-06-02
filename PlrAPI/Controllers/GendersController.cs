@@ -6,11 +6,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using PlrAPI.Models;
 using PlrAPI.Models.Database;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PlrAPI.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class GendersController : ControllerBase
     {
         private ApplicationContext _db;
@@ -28,13 +30,13 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult GetGenderById(int id)
         {
-            return new JsonResult(_db.Genders.Where(g => g.Id == id).First());
+            return new JsonResult(_db.Genders.Where(g => g.Id == id).FirstOrDefault());
         }
 
         [HttpGet]
         public JsonResult GetGenderByName(string name)
         {
-            return new JsonResult(_db.Genders.Where(g => g.Name == name).First());
+            return new JsonResult(_db.Genders.Where(g => g.Name == name).FirstOrDefault());
         }
     }
 }

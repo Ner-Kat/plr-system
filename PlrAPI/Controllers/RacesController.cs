@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PlrAPI.Models;
 using PlrAPI.Models.Database;
@@ -11,6 +12,7 @@ namespace PlrAPI.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class RacesController : ControllerBase
     {
         private ApplicationContext _db;
@@ -43,6 +45,7 @@ namespace PlrAPI.Controllers
             return GetList(_db.Races.OrderBy(r => r.Name), count, from);
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Add(Race race)
         {
@@ -62,7 +65,7 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult GetRace(int id)
         {
-            return new JsonResult(_db.Races.Where(r => r.Id == id).First());
+            return new JsonResult(_db.Races.Where(r => r.Id == id).FirstOrDefault());
         }
 
         [HttpGet]
@@ -71,6 +74,7 @@ namespace PlrAPI.Controllers
             return new JsonResult(_db.Races.Where(r => r.Name == name).ToList());
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult Remove(Race race)
         {
@@ -87,6 +91,7 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpGet]
         public IActionResult RemoveById(int id)
         {
@@ -105,12 +110,13 @@ namespace PlrAPI.Controllers
             }
         }
 
+        [Authorize(Policy = "ForEditors")]
         [HttpPost]
         public IActionResult Change(Race race)
         {
             try
             {
-                Race oldRace = _db.Races.Where(r => r.Id == race.Id).First();
+                Race oldRace = _db.Races.Where(r => r.Id == race.Id).FirstOrDefault();
                 oldRace.Name = race.Name;
                 oldRace.Desc = race.Desc;
                 _db.SaveChanges();
