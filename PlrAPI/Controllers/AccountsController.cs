@@ -122,5 +122,56 @@ namespace PlrAPI.Controllers
             };
             return new JsonResult(response);
         }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangePassword(string password)
+        {
+            int userId = Convert.ToInt32(User.FindFirstValue("UserId"));
+            User user = _authUtils.GetUserById(userId);
+
+            byte[] salt = _authUtils.GenerateSalt();
+            string hashedPassword = _authUtils.GetHashedPass(password, salt);
+
+            user.Salt = Convert.ToBase64String(salt);
+            user.Password = hashedPassword;
+            _db.SaveChanges();
+
+            _authUtils.UpdateRefreshToken(user);
+            var response = new
+            {
+                refresh_token = user.RefreshToken
+            };
+            return Ok(response);
+        }
+
+        [NonAction]
+        private JsonResult GetList(IQueryable<User> users, int? count, int? from)
+        {
+            if (count.HasValue)
+            {
+                return new JsonResult(users.TakeWhile((u, index) => index >= from && index < from + count).ToList());
+            }
+
+            return new JsonResult(users.ToList());
+        }
+
+        [Authorize]
+        [HttpGet]
+        public JsonResult GetUsersList(int? count, int? from = 0)
+        {
+            return GetList(_db.Users, count, from);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangeUserRole(int userId, string role)
+        {
+            User user = _authUtils.GetUserById(userId);
+            user.Role = role;
+            _db.SaveChanges();
+
+            return Ok();
+        }
     }
 }
