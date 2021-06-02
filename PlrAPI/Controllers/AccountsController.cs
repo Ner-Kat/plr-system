@@ -169,7 +169,7 @@ namespace PlrAPI.Controllers
             User user = _authUtils.GetUserById(userId);
             string currentRole = User.FindFirstValue(ClaimTypes.Role);
 
-            if ((user.Role == Roles.Admin && currentRole != Roles.SuperAdmin) || user.Role == Roles.SuperAdmin)
+            if (role == Roles.SuperAdmin || (user.Role == Roles.Admin && currentRole != Roles.SuperAdmin) || user.Role == Roles.SuperAdmin)
             {
                 return BadRequest("Role is not be able to change");
             }

@@ -30,23 +30,12 @@ namespace PlrAPI.Systems
 
         public string GetHashedPass(string password, byte[] salt)
         {
-            string hash = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password,
-                salt: salt,
-                prf: KeyDerivationPrf.HMACSHA256,
-                iterationCount: 10000,
-                numBytesRequested: 32));
-
-            return hash;
+            return PasswordsUtils.CreateHashedPass(password, salt);
         }
 
         public byte[] GenerateSalt()
         {
-            byte[] salt = new byte[AuthOptions.SaltSize];
-            var rndGenerator = RandomNumberGenerator.Create();
-            rndGenerator.GetBytes(salt);
-
-            return salt;
+            return PasswordsUtils.CreateSalt();
         }
 
         public ClaimsIdentity GetIdentity(User user)
