@@ -57,7 +57,8 @@ namespace PlrAPI.Systems
                 List<Claim> claims = new List<Claim>()
                 {
                     new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
-                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role)
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role),
+                    new Claim("UserId", user.Id.ToString())
                 };
 
                 claimsIdentity = new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
@@ -120,6 +121,11 @@ namespace PlrAPI.Systems
         public User GetUserByRefreshToken(string refreshToken)
         {
             return _db.Users.FirstOrDefault(u => u.RefreshToken == refreshToken);
+        }
+
+        public User GetUserById(int id)
+        {
+            return _db.Users.FirstOrDefault(u => u.Id == id);
         }
 
     }
