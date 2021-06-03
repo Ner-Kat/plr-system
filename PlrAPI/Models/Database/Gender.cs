@@ -18,5 +18,9 @@ namespace PlrAPI.Models.Database
         // Название пола.
         [Required]
         public string Name { get; set; }
+
+
+        // Навигационное свойство: список персонажей данного пола.
+        public List<Character> Characters { get; set; }
     }
 }

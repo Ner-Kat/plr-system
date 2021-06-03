@@ -21,5 +21,9 @@ namespace PlrAPI.Models.Database
 
         // Описание расы.
         public string Desc { get; set; }
+
+
+        // Навигационное свойство: список персонажей данной расы.
+        public List<Character> Characters { get; set; }
     }
 }
