@@ -80,8 +80,6 @@ namespace PlrAPI
             services.AddControllers();
 
             services.AddRouting(options => options.LowercaseUrls = true);
-
-            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -105,12 +103,6 @@ namespace PlrAPI
             });
 
             app.UseRouting();
-
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "PlrAPI v1.0");
-            });
 
             app.UseAuthentication();
             app.UseAuthorization();
