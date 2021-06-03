@@ -46,7 +46,7 @@ namespace PlrAPI.Models.Database
         public SocialFormation[] SocForm { get; set; }
 
         // Рост персонажа
-        public int? growth { get; set; }
+        public int? Growth { get; set; }
 
         // ID биологического отца персонажа.
         public int? BioFatherId { get; set; }
