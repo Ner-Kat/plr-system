@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PlrAPI.Models.Database
 {
@@ -24,18 +25,19 @@ namespace PlrAPI.Models.Database
         public string Desc { get; set; }
 
         // "Родительская" локация по отношению к данной.
-        public int? ParentLocationId { get; set; }
-        public virtual Location Parent { get; set; }
+        public int? ParentLocId { get; set; }
+        public virtual Location ParentLoc { get; set; }
 
         // Локации, которые являются частями данной.
         public virtual ICollection<Location> Children { get; set; }
 
-        /*
-        // "Родительская" локация по отношению к данной.
-        public Location PartOfLoc { get; set; }
 
-        // Локации, которые являются частями данной.
-        public Location[] ContainsLocs { get; set; }
-        */
+        // Навигацонное свойство: список родившихся здесь персонажей.
+        [InverseProperty("LocBirth")]
+        public List<Character> CharactersBirthed { get; set; }
+
+        // Навигацонное свойство: список умерших здесь персонажей.
+        [InverseProperty("LocDeath")]
+        public List<Character> CharactersDead { get; set; }
     }
 }

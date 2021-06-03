@@ -119,8 +119,7 @@ namespace PlrAPI.Controllers
                 Location oldLoc = _db.Locations.Where(r => r.Id == loc.Id).FirstOrDefault();
                 oldLoc.Name = loc.Name;
                 oldLoc.Desc = loc.Desc;
-                oldLoc.Parent = loc.Parent;
-                oldLoc.ParentLocationId = loc.ParentLocationId;
+                oldLoc.ParentLocId = loc.ParentLocId;
                 oldLoc.Children = loc.Children;
                 _db.SaveChanges();
 
@@ -135,7 +134,7 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult GetRootLocations()
         {
-            return new JsonResult(_db.Locations.Where(loc => !loc.ParentLocationId.HasValue));
+            return new JsonResult(_db.Locations.Where(loc => !loc.ParentLocId.HasValue));
         }
 
         [HttpGet]

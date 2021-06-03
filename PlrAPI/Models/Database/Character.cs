@@ -20,30 +20,34 @@ namespace PlrAPI.Models.Database
         public string Name { get; set; }
 
         // Альтернативные имена персонажа (в т.ч. прозвища и клички).
-        public string[] AltNames { get; set; }
+        public List<string> AltNames { get; set; }
 
         // Дата рождения персонажа.
-        public DateTime DateBirth { get; set; }
+        public DateTime? DateBirth { get; set; }
 
         // Дата смерти персонажа.
-        public DateTime DateDeath { get; set; }
+        public DateTime? DateDeath { get; set; }
 
         // Пол персонажа.
         [Required]
+        public int? GenderId { get; set; }
         public Gender Gender { get; set; }
 
         // Место (локация) рождения персонажа.
+        public int? LocBirthId { get; set; }
         public Location LocBirth { get; set; }
 
         // Место (локация) смерти персонажа.
+        public int? LocDeathId { get; set; }
         public Location LocDeath { get; set; }
 
         // Раса персонажа.
         [Required]
+        public int? RaceId { get; set; }
         public Race Race { get; set; }
 
         // Все варианты национальной или общественной идентификация персонажа.
-        public SocialFormation[] SocForm { get; set; }
+        public List<SocialFormation> SocForms { get; set; }
 
         // Рост персонажа
         public int? Growth { get; set; }
@@ -54,20 +58,23 @@ namespace PlrAPI.Models.Database
         // ID биологической матери персонажа.
         public int? BioMotherId { get; set; }
 
+        // Список ID детей.
+        public List<int> ChildrenId { get; set; }
+
         // Титулы, звания и ранги персонажа.
-        public string[] Titles { get; set; }
+        public List<string> Titles { get; set; }
 
         // Цвет волос персонажа.
-        public int ColorHair { get; set; }
+        public int? ColorHair { get; set; }
 
         // Цвет глаз персонажа.
-        public int ColorEyes { get; set; }
+        public int? ColorEyes { get; set; }
 
         // Описание и биография персонажа.
         public string Desc { get; set; }
 
         // Список ID других личностей персонажа.
-        public int[] AltCharsId { get; set; }
+        public List<int> AltCharsId { get; set; }
 
         // Дополнительная информация о персонаже.
         public string[,] Additions { get; set; }

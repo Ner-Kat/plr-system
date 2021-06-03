@@ -22,5 +22,9 @@ namespace PlrAPI.Models.Database
 
         // Описание общественного формирования.
         public string Desc { get; set; }
+
+
+        // Навигационное свойство: все персонажи, относящиеся к данному социальному формированию.
+        public List<Character> Characters { get; set; }
     }
 }
