@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using PlrAPI.Models;
 using PlrAPI.Models.Database;
 using Microsoft.AspNetCore.Authorization;
+using PlrAPI.Models.InputCards;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace PlrAPI.Controllers
 {
@@ -16,42 +19,61 @@ namespace PlrAPI.Controllers
     public class LocationsController : ControllerBase
     {
         private ApplicationContext _db;
+        private ILogger<Startup> _logger;
 
-        public LocationsController(ApplicationContext appContext)
+        public LocationsController(ApplicationContext appContext, ILogger<Startup> logger)
         {
             _db = appContext;
+            _logger = logger;
         }
 
-        [NonAction]
-        public JsonResult GetList(IQueryable<Location> locs, int? count, int? from)
-        {
-            if (count.HasValue)
-            {
-                return new JsonResult(locs.TakeWhile((loc, index) => index >= from && index < from + count).ToList());
-            }
 
-            return new JsonResult(locs.ToList());
+        // Основные методы API
+
+        [HttpGet]
+        public JsonResult Get(int id)
+        {
+            var data = (from loc in _db.Locations.Include(loc => loc.ParentLoc)
+                        where loc.Id == id
+                        select new { loc.Id, loc.Name, loc.Desc, ParentLoc = loc.ParentLoc.Name, loc.ParentLocId }).FirstOrDefault();
+
+            return new JsonResult(data);
         }
 
         [HttpGet]
         public JsonResult List(int? count, int? from = 0)
         {
-            return GetList(_db.Locations, count, from);
+            if (count.HasValue)
+            {
+                var data = _db.Locations.Select(loc => new { loc.Id, loc.Name })
+                    .Skip(from.Value).Take(count.Value).ToList();
+                return new JsonResult(data);
+            }
+            else
+            {
+                var data = _db.Locations.Select(loc => new { loc.Id, loc.Name })
+                    .Skip(from.Value).ToList();
+                return new JsonResult(data);
+            }
         }
 
         [HttpGet]
-        public JsonResult ListOrderedByNames(int? count, int? from = 0)
+        public JsonResult Find(string name)
         {
-            return GetList(_db.Locations.OrderBy(r => r.Name), count, from);
+            var data = (from loc in _db.Locations
+                        where loc.Name.ToLower().Contains(name.ToLower())
+                        select new { loc.Id, loc.Name }).ToList();
+
+            return new JsonResult(data);
         }
 
         [Authorize(Policy = "ForEditors")]
         [HttpPost]
-        public IActionResult Add(Location loc)
+        public IActionResult Add(InputLocation loc)
         {
             try
             {
-                _db.Locations.Add(loc);
+                _db.Locations.Add(loc.ToLocation());
                 _db.SaveChanges();
 
                 return Ok();
@@ -62,25 +84,14 @@ namespace PlrAPI.Controllers
             }
         }
 
-        [HttpGet]
-        public JsonResult GetLocation(int id)
-        {
-            return new JsonResult(_db.Locations.Where(loc => loc.Id == id).FirstOrDefault());
-        }
-
-        [HttpGet]
-        public JsonResult GetLocationByName(string name)
-        {
-            return new JsonResult(_db.Locations.Where(loc => loc.Name == name).ToList());
-        }
-
         [Authorize(Policy = "ForEditors")]
-        [HttpGet]
-        public IActionResult Remove(Location loc)
+        [HttpPost]
+        public IActionResult Change(InputLocation loc)
         {
             try
             {
-                _db.Remove(loc);
+                Location oldLoc = _db.Locations.Where(r => r.Id == loc.Id).FirstOrDefault();
+                loc.WriteIn(oldLoc);
                 _db.SaveChanges();
 
                 return Ok();
@@ -93,7 +104,7 @@ namespace PlrAPI.Controllers
 
         [Authorize(Policy = "ForEditors")]
         [HttpGet]
-        public IActionResult RemoveById(int id)
+        public IActionResult Remove(int id)
         {
             try
             {
@@ -110,47 +121,43 @@ namespace PlrAPI.Controllers
             }
         }
 
-        [Authorize(Policy = "ForEditors")]
-        [HttpPost]
-        public IActionResult Change(Location loc)
+
+        // Дополнительные методы API
+
+        [HttpGet]
+        public JsonResult SortedList(int? count, int? from = 0)
         {
-            try
+            if (count.HasValue)
             {
-                Location oldLoc = _db.Locations.Where(r => r.Id == loc.Id).FirstOrDefault();
-                oldLoc.Name = loc.Name;
-                oldLoc.Desc = loc.Desc;
-                oldLoc.ParentLocId = loc.ParentLocId;
-                oldLoc.Children = loc.Children;
-                _db.SaveChanges();
-
-                return Ok();
+                var data = _db.Locations.OrderBy(loc => loc.Name).Select(loc => new { loc.Id, loc.Name })
+                    .Skip(from.Value).Take(count.Value).ToList();
+                return new JsonResult(data);
             }
-            catch
+            else
             {
-                return BadRequest();
+                var data = _db.Locations.OrderBy(loc => loc.Name).Select(loc => new { loc.Id, loc.Name })
+                    .Skip(from.Value).ToList();
+                return new JsonResult(data);
             }
         }
 
         [HttpGet]
-        public JsonResult GetRootLocations()
+        public JsonResult Sublocations(int id)
         {
-            return new JsonResult(_db.Locations.Where(loc => !loc.ParentLocId.HasValue));
+            var data = _db.Locations.Where(loc => loc.ParentLocId == id)
+                .Select(loc => new { loc.Id, loc.Name }).ToList();
+
+            return new JsonResult(data);
         }
 
         [HttpGet]
-        public JsonResult GetLocationChildren(Location loc)
+        public JsonResult RootLocations()
         {
-            return GetLocationChildrenById(loc.Id);
+            var data = _db.Locations.Where(loc => !loc.ParentLocId.HasValue)
+                .Select(loc => new { loc.Id, loc.Name }).ToList();
 
-            /* Location parentLoc = _db.Locations.Where(dbLoc => dbLoc.Id == loc.Id).FirstOrDefault();
-            return new JsonResult(parentLoc.Children.ToList()); */
+            return new JsonResult(data);
         }
 
-        [HttpGet]
-        public JsonResult GetLocationChildrenById(int id)
-        {
-            Location parentLoc = _db.Locations.Where(dbLoc => dbLoc.Id == id).FirstOrDefault();
-            return new JsonResult(parentLoc.Children.ToList());
-        }
     }
 }

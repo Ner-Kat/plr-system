@@ -79,6 +79,8 @@ namespace PlrAPI
 
             services.AddControllers();
 
+            services.AddSwaggerGen();
+
             services.AddRouting(options => options.LowercaseUrls = true);
         }
 
@@ -101,6 +103,9 @@ namespace PlrAPI
                 HttpOnly = HttpOnlyPolicy.Always,
                 Secure = CookieSecurePolicy.Always
             });
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseRouting();
 

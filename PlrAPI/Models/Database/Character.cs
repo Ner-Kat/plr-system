@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PlrAPI.Models.Database
 {
@@ -48,6 +49,9 @@ namespace PlrAPI.Models.Database
 
         // Все варианты национальной или общественной идентификация персонажа.
         public List<SocialFormation> SocForms { get; set; }
+
+        [NotMapped]
+        public List<int> SocFormsId { get; set; }
 
         // Рост персонажа
         public int? Growth { get; set; }
