@@ -28,15 +28,15 @@ namespace PlrAPI.Controllers
         }
 
         [HttpGet]
-        public JsonResult GetGenderById(int id)
+        public JsonResult Get(int id)
         {
-            return new JsonResult(_db.Genders.Where(g => g.Id == id).FirstOrDefault());
+            return new JsonResult(_db.Genders.Where(g => g.Id == id).Select(g => g.Name).FirstOrDefault());
         }
 
         [HttpGet]
-        public JsonResult GetGenderByName(string name)
+        public JsonResult GetId(string name)
         {
-            return new JsonResult(_db.Genders.Where(g => g.Name == name).FirstOrDefault());
+            return new JsonResult(_db.Genders.Where(g => g.Name == name).Select(g => g.Id).FirstOrDefault());
         }
     }
 }
