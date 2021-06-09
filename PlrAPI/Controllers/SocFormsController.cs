@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PlrAPI.Models;
 using PlrAPI.Models.Database;
+using PlrAPI.Models.InputCards;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,36 +23,51 @@ namespace PlrAPI.Controllers
             _db = appContext;
         }
 
-        [NonAction]
-        public JsonResult GetList(IQueryable<SocialFormation> socForms, int? count, int? from)
-        {
-            if (count.HasValue)
-            {
-                return new JsonResult(socForms.TakeWhile((sf, index) => index >= from && index < from + count).ToList());
-            }
 
-            return new JsonResult(socForms.ToList());
+        // Основные методы API
+
+        [HttpGet]
+        public JsonResult Get(int id)
+        {
+            var data = _db.SocialFormations.Where(sf => sf.Id == id).Select(sf => new { sf.Id, sf.Name, sf.Desc }).FirstOrDefault();
+
+            return new JsonResult(data);
         }
 
         [HttpGet]
         public JsonResult List(int? count, int? from = 0)
         {
-            return GetList(_db.SocialFormations, count, from);
+            if (count.HasValue)
+            {
+                var data = _db.SocialFormations.Select(sf => new { sf.Id, sf.Name })
+                    .Skip(from.Value).Take(count.Value).ToList();
+                return new JsonResult(data);
+            }
+            else
+            {
+                var data = _db.SocialFormations.Select(sf => new { sf.Id, sf.Name })
+                    .Skip(from.Value).ToList();
+                return new JsonResult(data);
+            }
         }
 
         [HttpGet]
-        public JsonResult ListOrderedByNames(int? count, int? from = 0)
+        public JsonResult Find(string name)
         {
-            return GetList(_db.SocialFormations.OrderBy(sf => sf.Name), count, from);
+            var data = (from socForm in _db.SocialFormations
+                        where socForm.Name.ToLower().Contains(name.ToLower())
+                        select new { socForm.Id, socForm.Name }).ToList();
+
+            return new JsonResult(data);
         }
 
         [Authorize(Policy = "ForEditors")]
         [HttpPost]
-        public IActionResult Add(SocialFormation socForm)
+        public IActionResult Add(InputSocialFormation socForm)
         {
             try
             {
-                _db.SocialFormations.Add(socForm);
+                _db.SocialFormations.Add(socForm.ToSocialFormation());
                 _db.SaveChanges();
 
                 return Ok();
@@ -62,25 +78,14 @@ namespace PlrAPI.Controllers
             }
         }
 
-        [HttpGet]
-        public JsonResult GetSocForm(int id)
-        {
-            return new JsonResult(_db.SocialFormations.Where(sf => sf.Id == id).FirstOrDefault());
-        }
-
-        [HttpGet]
-        public JsonResult GetSocFormByName(string name)
-        {
-            return new JsonResult(_db.SocialFormations.Where(sf => sf.Name == name).ToList());
-        }
-
         [Authorize(Policy = "ForEditors")]
-        [HttpGet]
-        public IActionResult Remove(SocialFormation socForm)
+        [HttpPost]
+        public IActionResult Change(InputSocialFormation socForm)
         {
             try
             {
-                _db.Remove(socForm);
+                SocialFormation oldSocForm = _db.SocialFormations.Where(sf => sf.Id == socForm.Id).FirstOrDefault();
+                socForm.WriteIn(oldSocForm);
                 _db.SaveChanges();
 
                 return Ok();
@@ -93,7 +98,7 @@ namespace PlrAPI.Controllers
 
         [Authorize(Policy = "ForEditors")]
         [HttpGet]
-        public IActionResult RemoveById(int id)
+        public IActionResult Remove(int id)
         {
             try
             {
@@ -110,22 +115,20 @@ namespace PlrAPI.Controllers
             }
         }
 
-        [Authorize(Policy = "ForEditors")]
-        [HttpPost]
-        public IActionResult Change(SocialFormation socForm)
+        [HttpGet]
+        public JsonResult SortedList(int? count, int? from = 0)
         {
-            try
+            if (count.HasValue)
             {
-                SocialFormation oldSocForm = _db.SocialFormations.Where(r => r.Id == socForm.Id).FirstOrDefault();
-                oldSocForm.Name = socForm.Name;
-                oldSocForm.Desc = socForm.Desc;
-                _db.SaveChanges();
-
-                return Ok();
+                var data = _db.SocialFormations.OrderBy(sf => sf.Name).Select(sf => new { sf.Id, sf.Name })
+                    .Skip(from.Value).Take(count.Value).ToList();
+                return new JsonResult(data);
             }
-            catch
+            else
             {
-                return BadRequest();
+                var data = _db.SocialFormations.OrderBy(sf => sf.Name).Select(sf => new { sf.Id, sf.Name })
+                    .Skip(from.Value).ToList();
+                return new JsonResult(data);
             }
         }
     }

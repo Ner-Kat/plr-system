@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using PlrAPI.Models;
 using PlrAPI.Models.Database;
 using Microsoft.AspNetCore.Authorization;
+using PlrAPI.Models.InputCards;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace PlrAPI.Controllers
 {
@@ -22,48 +25,74 @@ namespace PlrAPI.Controllers
             _db = appContext;
         }
 
-        [NonAction]
-        public JsonResult GetList(IQueryable<Character> characters, int? count, int? from)
-        {
-            if (count.HasValue)
-            {
-                return new JsonResult(characters.TakeWhile((ch, index) => index >= from && index < from + count).ToList());
-            }
 
-            return new JsonResult(characters.ToList());
+        // Основные методы API
+
+        [HttpGet]
+        public JsonResult Get(int id)
+        {
+            // Загрузка всех основных данных персонажа
+            var charData = (from ch in _db.Characters.Include(c => c.Gender).Include(c => c.LocBirth).Include(c => c.LocDeath).Include(c => c.Race)
+                        join father in _db.Characters
+                            on ch.BioFatherId equals father.Id
+                        join mother in _db.Characters
+                            on ch.BioMotherId equals mother.Id
+                        where ch.Id == id
+                        select new { 
+                            ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.GenderId, ch.LocBirthId, ch.LocDeathId, 
+                            ch.RaceId, ch.SocFormsId, ch.Growth, ch.BioFatherId, ch.BioMotherId, ch.ChildrenId, ch.Titles, 
+                            ch.ColorHair, ch.ColorEyes, ch.Desc, ch.AltCharsId, ch.Additions,
+                            Gender = ch.Gender.Name, LocBirth = ch.LocBirth.Name, LocDeath = ch.LocDeath, Race = ch.Race.Name,
+                            BioFather = father.Name, BioMother = mother.Name
+                        }).FirstOrDefault();
+
+            // Загрузка списка социальных формирований
+            var socForms = _db.SocialFormations.Where(sf => charData.SocFormsId.Contains(sf.Id)).Select(sf => new { sf.Id, sf.Name }).ToList();
+
+            // Загрузка списка детей
+            var children = _db.Characters.Where(c => charData.ChildrenId.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
+
+            // Загрузка списка альтернативных карточек
+            var altChars = _db.Characters.Where(c => charData.AltCharsId.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
+
+
+            var data = new { mainData = charData, socialFormations = socForms, children, altCharCards = altChars };
+            return new JsonResult(data);
         }
 
         [HttpGet]
         public JsonResult List(int? count, int? from = 0)
         {
-            return GetList(_db.Characters, count, from);
+            if (count.HasValue)
+            {
+                var data = _db.Characters.Select(c => new { c.Id, c.Name })
+                    .Skip(from.Value).Take(count.Value).ToList();
+                return new JsonResult(data);
+            }
+            else
+            {
+                var data = _db.Characters.Select(c => new { c.Id, c.Name })
+                    .Skip(from.Value).ToList();
+                return new JsonResult(data);
+            }
         }
 
         [HttpGet]
-        public JsonResult ListOrderedByNames(int? count, int? from = 0)
+        public JsonResult Find(string name)
         {
-            return GetList(_db.Characters.OrderBy(ch => ch.Name), count, from);
-        }
+            var data = _db.Characters.Where(c => c.Name.ToLower().Contains(name.ToLower()) || ContainsWithIgnoringCase(c.AltNames, name))
+                .Select(c => new { c.Id, c.Name }).ToList();
 
-        [HttpGet]
-        public JsonResult ListOrderedByBirthDates(int? count, int? from = 0)
-        {
-            return GetList(_db.Characters.OrderBy(ch => ch.DateBirth), count, from);
-        }
-
-        [HttpGet]
-        public JsonResult ListOrderedByBirthLocs(int? count, int? from = 0)
-        {
-            return GetList(_db.Characters.OrderBy(ch => ch.LocBirth.Name), count, from);
+            return new JsonResult(data);
         }
 
         [Authorize(Policy = "ForEditors")]
         [HttpPost]
-        public IActionResult Add(Character character)
+        public IActionResult Add(InputCharacter character)
         {
             try
             {
-                _db.Characters.Add(character);
+                _db.Characters.Add(character.ToCharacter(() => GetSocForms(character.SocFormsId)));
                 _db.SaveChanges();
 
                 return Ok();
@@ -74,25 +103,14 @@ namespace PlrAPI.Controllers
             }
         }
 
-        [HttpGet]
-        public JsonResult GetCharacter(int id)
-        {
-            return new JsonResult(_db.Characters.Where(ch => ch.Id == id).FirstOrDefault());
-        }
-
-        [HttpGet]
-        public JsonResult GetCharacterByName(string name)
-        {
-            return new JsonResult(_db.Characters.Where(ch => ch.Name == name).ToList());
-        }
-
         [Authorize(Policy = "ForEditors")]
-        [HttpGet]
-        public IActionResult Remove(Character character)
+        [HttpPost]
+        public IActionResult Change(InputCharacter character)
         {
             try
             {
-                _db.Remove(character);
+                Character oldChar = _db.Characters.Where(c => c.Id == character.Id).FirstOrDefault();
+                character.WriteIn(oldChar, () => GetSocForms(character.SocFormsId));
                 _db.SaveChanges();
 
                 return Ok();
@@ -105,7 +123,7 @@ namespace PlrAPI.Controllers
 
         [Authorize(Policy = "ForEditors")]
         [HttpGet]
-        public IActionResult RemoveById(int id)
+        public IActionResult Remove(int id)
         {
             try
             {
@@ -122,23 +140,61 @@ namespace PlrAPI.Controllers
             }
         }
 
-        [Authorize(Policy = "ForEditors")]
-        [HttpPost]
-        public IActionResult Change(Character character)
+        [HttpGet]
+        public JsonResult SortedList(int? count, int? from = 0)
         {
-            try
+            if (count.HasValue)
             {
-                Character oldCharacter = _db.Characters.Where(ch => ch.Id == character.Id).FirstOrDefault();
-                oldCharacter.Name = character.Name;
-                oldCharacter.Desc = character.Desc;
-                _db.SaveChanges();
+                var data = _db.Characters.OrderBy(c => c.Name).Select(c => new { c.Id, c.Name })
+                    .Skip(from.Value).Take(count.Value).ToList();
+                return new JsonResult(data);
+            }
+            else
+            {
+                var data = _db.Characters.OrderBy(c => c.Name).Select(c => new { c.Id, c.Name })
+                    .Skip(from.Value).ToList();
+                return new JsonResult(data);
+            }
+        }
 
-                return Ok();
-            }
-            catch
+
+        // Дополнительные методы API
+
+        [HttpGet]
+        public JsonResult GetShort(int id)
+        {
+            var charData = (from ch in _db.Characters
+                        where ch.Id == id
+                        select new { 
+                            ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.GenderId, ch.LocBirthId, ch.LocDeathId, 
+                            ch.RaceId, ch.SocFormsId, ch.Growth, ch.BioFatherId, ch.BioMotherId, ch.ChildrenId, ch.Titles, 
+                            ch.ColorHair, ch.ColorEyes, ch.Desc, ch.AltCharsId, ch.Additions
+                        }).FirstOrDefault();
+
+            var data = new { mainData = charData };
+            return new JsonResult(data);
+        }
+
+
+        // Вспомогательные методы
+
+        private static bool ContainsWithIgnoringCase(IEnumerable<string> list, string str)
+        {
+            foreach (string s in list)
             {
-                return BadRequest();
+                if (s.ToLower().Contains(str.ToLower()))
+                    return true;
             }
+
+            return false;
+        }
+
+        private List<SocialFormation> GetSocForms(int[] indexes)
+        {
+            if (indexes != null)
+                return _db.SocialFormations.Where(sf => indexes.Contains(sf.Id)).ToList();
+            else
+                return new List<SocialFormation>();
         }
     }
 }

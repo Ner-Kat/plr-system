@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PlrAPI.Models;
 using PlrAPI.Models.Database;
+using PlrAPI.Models.InputCards;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,36 +23,51 @@ namespace PlrAPI.Controllers
             _db = appContext;
         }
 
-        [NonAction]
-        public JsonResult GetList(IQueryable<Race> races, int? count, int? from)
-        {
-            if (count.HasValue)
-            {
-                return new JsonResult(races.TakeWhile((r, index) => index >= from && index < from + count).ToList());
-            }
 
-            return new JsonResult(races.ToList());
+        // Основные методы API
+
+        [HttpGet]
+        public JsonResult Get(int id)
+        {
+            var data = _db.Races.Where(r => r.Id == id).Select(r => new { r.Id, r.Name, r.Desc }).FirstOrDefault();
+
+            return new JsonResult(data);
         }
 
         [HttpGet]
         public JsonResult List(int? count, int? from = 0)
         {
-            return GetList(_db.Races, count, from);
+            if (count.HasValue)
+            {
+                var data = _db.Races.Select(r => new { r.Id, r.Name })
+                    .Skip(from.Value).Take(count.Value).ToList();
+                return new JsonResult(data);
+            }
+            else
+            {
+                var data = _db.Races.Select(r => new { r.Id, r.Name })
+                    .Skip(from.Value).ToList();
+                return new JsonResult(data);
+            }
         }
 
         [HttpGet]
-        public JsonResult ListOrderedByNames(int? count, int? from = 0)
+        public JsonResult Find(string name)
         {
-            return GetList(_db.Races.OrderBy(r => r.Name), count, from);
+            var data = (from race in _db.Races
+                        where race.Name.ToLower().Contains(name.ToLower())
+                        select new { race.Id, race.Name }).ToList();
+
+            return new JsonResult(data);
         }
 
         [Authorize(Policy = "ForEditors")]
         [HttpPost]
-        public IActionResult Add(Race race)
+        public IActionResult Add(InputRace race)
         {
             try
             {
-                _db.Races.Add(race);
+                _db.Races.Add(race.ToRace());
                 _db.SaveChanges();
 
                 return Ok();
@@ -62,25 +78,14 @@ namespace PlrAPI.Controllers
             }
         }
 
-        [HttpGet]
-        public JsonResult GetRace(int id)
-        {
-            return new JsonResult(_db.Races.Where(r => r.Id == id).FirstOrDefault());
-        }
-
-        [HttpGet]
-        public JsonResult GetRaceByName(string name)
-        {
-            return new JsonResult(_db.Races.Where(r => r.Name == name).ToList());
-        }
-
         [Authorize(Policy = "ForEditors")]
-        [HttpGet]
-        public IActionResult Remove(Race race)
+        [HttpPost]
+        public IActionResult Change(InputRace race)
         {
             try
             {
-                _db.Remove(race);
+                Race oldRace = _db.Races.Where(r => r.Id == race.Id).FirstOrDefault();
+                race.WriteIn(oldRace);
                 _db.SaveChanges();
 
                 return Ok();
@@ -93,7 +98,7 @@ namespace PlrAPI.Controllers
 
         [Authorize(Policy = "ForEditors")]
         [HttpGet]
-        public IActionResult RemoveById(int id)
+        public IActionResult Remove(int id)
         {
             try
             {
@@ -110,22 +115,20 @@ namespace PlrAPI.Controllers
             }
         }
 
-        [Authorize(Policy = "ForEditors")]
-        [HttpPost]
-        public IActionResult Change(Race race)
+        [HttpGet]
+        public JsonResult SortedList(int? count, int? from = 0)
         {
-            try
+            if (count.HasValue)
             {
-                Race oldRace = _db.Races.Where(r => r.Id == race.Id).FirstOrDefault();
-                oldRace.Name = race.Name;
-                oldRace.Desc = race.Desc;
-                _db.SaveChanges();
-
-                return Ok();
+                var data = _db.Races.OrderBy(r => r.Name).Select(r => new { r.Id, r.Name })
+                    .Skip(from.Value).Take(count.Value).ToList();
+                return new JsonResult(data);
             }
-            catch
+            else
             {
-                return BadRequest();
+                var data = _db.Races.OrderBy(r => r.Name).Select(r => new { r.Id, r.Name })
+                    .Skip(from.Value).ToList();
+                return new JsonResult(data);
             }
         }
     }

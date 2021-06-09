@@ -90,7 +90,7 @@ namespace PlrAPI.Controllers
         {
             try
             {
-                Location oldLoc = _db.Locations.Where(r => r.Id == loc.Id).FirstOrDefault();
+                Location oldLoc = _db.Locations.Where(eloc => eloc.Id == loc.Id).FirstOrDefault();
                 loc.WriteIn(oldLoc);
                 _db.SaveChanges();
 
@@ -121,9 +121,6 @@ namespace PlrAPI.Controllers
             }
         }
 
-
-        // Дополнительные методы API
-
         [HttpGet]
         public JsonResult SortedList(int? count, int? from = 0)
         {
@@ -140,6 +137,9 @@ namespace PlrAPI.Controllers
                 return new JsonResult(data);
             }
         }
+
+
+        // Дополнительные методы API
 
         [HttpGet]
         public JsonResult Sublocations(int id)
