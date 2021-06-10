@@ -39,7 +39,7 @@ namespace PlrAPI.Controllers
                             on ch.BioMotherId equals mother.Id
                         where ch.Id == id
                         select new { 
-                            ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.GenderId, ch.LocBirthId, ch.LocDeathId, 
+                            ch.Id, ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.GenderId, ch.LocBirthId, ch.LocDeathId, 
                             ch.RaceId, ch.SocFormsId, ch.Growth, ch.BioFatherId, ch.BioMotherId, ch.ChildrenId, ch.Titles, 
                             ch.ColorHair, ch.ColorEyes, ch.Desc, ch.AltCharsId, ch.Additions,
                             Gender = ch.Gender.Name, LocBirth = ch.LocBirth.Name, LocDeath = ch.LocDeath, Race = ch.Race.Name,
@@ -56,7 +56,7 @@ namespace PlrAPI.Controllers
             var altChars = _db.Characters.Where(c => charData.AltCharsId.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
 
 
-            var data = new { mainData = charData, socialFormations = socForms, children, altCharCards = altChars };
+            var data = new { MainData = charData, SocialFormations = socForms, Children = children, AltCharCards = altChars };
             return new JsonResult(data);
         }
 

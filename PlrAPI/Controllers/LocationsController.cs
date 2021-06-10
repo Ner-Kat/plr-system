@@ -144,8 +144,11 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult Sublocations(int id)
         {
-            var data = _db.Locations.Where(loc => loc.ParentLocId == id)
-                .Select(loc => new { loc.Id, loc.Name }).ToList();
+            // var data = _db.Locations.Where(loc => loc.ParentLocId == id)
+            //     .Select(loc => new { loc.Id, loc.Name }).ToList();
+            
+            var data = _db.Locations.Where(loc => loc.Id == id).FirstOrDefault()
+                .Children.Select(loc => new { loc.Id, loc.Name }).ToList();
 
             return new JsonResult(data);
         }
