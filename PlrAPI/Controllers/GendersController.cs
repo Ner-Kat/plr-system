@@ -24,7 +24,7 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult List()
         {
-            return new JsonResult(_db.Genders.ToList());
+            return new JsonResult(_db.Genders.Select(g => new { g.Id, g.Name }).ToList());
         }
 
         [HttpGet]

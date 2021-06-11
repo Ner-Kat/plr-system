@@ -178,6 +178,7 @@ namespace PlrAPI.Controllers
 
         // Вспомогательные методы
 
+        [NonAction]
         private static bool ContainsWithIgnoringCase(IEnumerable<string> list, string str)
         {
             foreach (string s in list)
@@ -189,6 +190,7 @@ namespace PlrAPI.Controllers
             return false;
         }
 
+        [NonAction]
         private List<SocialFormation> GetSocForms(int[] indexes)
         {
             if (indexes != null)
