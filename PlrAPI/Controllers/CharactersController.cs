@@ -42,7 +42,7 @@ namespace PlrAPI.Controllers
                             ch.Id, ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.GenderId, ch.LocBirthId, ch.LocDeathId, 
                             ch.RaceId, ch.SocFormsId, ch.Growth, ch.BioFatherId, ch.BioMotherId, ch.ChildrenId, ch.Titles, 
                             ch.ColorHair, ch.ColorEyes, ch.Desc, ch.AltCharsId, ch.Additions,
-                            Gender = ch.Gender.Name, LocBirth = ch.LocBirth.Name, LocDeath = ch.LocDeath, Race = ch.Race.Name,
+                            Gender = ch.Gender.Name, LocBirth = ch.LocBirth.Name, LocDeath = ch.LocDeath.Name, Race = ch.Race.Name,
                             BioFather = father.Name, BioMother = mother.Name
                         }).FirstOrDefault();
 
