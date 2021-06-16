@@ -34,21 +34,21 @@ namespace PlrAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Register(string login, string password)
+        public IActionResult Register(AuthData authData)
         {
-            if (_db.Users.Any(u => u.Login == login))
+            if (_db.Users.Any(u => u.Login == authData.Login))
             {
                 return BadRequest("Login already exists");
             }
 
             byte[] salt = _authUtils.GenerateSalt();
-            string hashedPassword = _authUtils.GetHashedPass(password, salt);
+            string hashedPassword = _authUtils.GetHashedPass(authData.Password, salt);
 
             try
             {
                 User user = new User()
                 {
-                    Login = login,
+                    Login = authData.Login,
                     Password = hashedPassword,
                     Salt = Convert.ToBase64String(salt),
                     Role = Roles.User
@@ -79,10 +79,10 @@ namespace PlrAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult GetToken(string login, string password)
+        public IActionResult GetToken(AuthData authData)
         {
             // Получение данных пользователя
-            User user = _authUtils.AuthAndGetUser(login, password);
+            User user = _authUtils.AuthAndGetUser(authData.Login, authData.Password);
             if (user == null)
             {
                 return BadRequest("Failed authenticate");
@@ -101,10 +101,10 @@ namespace PlrAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult RefreshToken(string refreshToken)
+        public IActionResult RefreshToken(TokenRefreshData tokenRefreshData)
         {
             // Получение данных пользователя
-            User user = _authUtils.GetUserByRefreshToken(refreshToken);
+            User user = _authUtils.GetUserByRefreshToken(tokenRefreshData.RefreshToken);
             if (user == null)
             {
                 return BadRequest("Wrong refresh token");
@@ -124,13 +124,13 @@ namespace PlrAPI.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult ChangePassword(string password)
+        public IActionResult ChangePassword(AuthData authData)
         {
             int userId = Convert.ToInt32(User.FindFirstValue("UserId"));
             User user = _authUtils.GetUserById(userId);
 
             byte[] salt = _authUtils.GenerateSalt();
-            string hashedPassword = _authUtils.GetHashedPass(password, salt);
+            string hashedPassword = _authUtils.GetHashedPass(authData.Password, salt);
 
             user.Salt = Convert.ToBase64String(salt);
             user.Password = hashedPassword;
