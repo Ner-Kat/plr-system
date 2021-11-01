@@ -70,7 +70,7 @@
 
 |	Адрес метода				|	Тип запроса			|	Параметры			| Ответ
 |	:----:						|	:----:				|	:----:				| :----:
-| **/api/locations/list**		|	POST				| location_data			| —
+| **/api/locations/add**		|	POST				| location_data			| —
 
 **Значения параметров:**
 * `location_data` : значения полей, описанных в [карточке локации](../datadoc/location_card.md) и помеченных как входные *(In)*.
