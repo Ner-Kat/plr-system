@@ -54,7 +54,7 @@
 
 |	Адрес метода				|	Тип запроса			|	Параметры			| Ответ
 |	:----:						|	:----:				|	:----:				| :----:
-| **/api/races/find**			|	GET					| name					| JSON:<br/>socforms list
+| **/api/races/find**			|	GET					| name					| JSON:<br/>races list
 
 **Значения параметров:**
 * `name` : искомая часть названия расы.
