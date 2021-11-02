@@ -70,7 +70,7 @@
 
 |	Адрес метода				|	Тип запроса			|	Параметры			| Ответ
 |	:----:						|	:----:				|	:----:				| :----:
-| **/api/characters/list**		|	POST				| character_data		| —
+| **/api/characters/add**		|	POST				| character_data		| —
 
 **Значения параметров:**
 * `character_data` : значения полей, описанных в [карточке персонажа](../datadoc/char_card.md) и помеченных как входные *(In)*.
