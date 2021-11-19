@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authorization;
 using PlrAPI.Models.InputCards;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using PlrAPI.Systems.JsonOptions;
+using PlrAPI.Systems;
 
 namespace PlrAPI.Controllers
 {
@@ -20,11 +23,13 @@ namespace PlrAPI.Controllers
     {
         private ApplicationContext _db;
         private ILogger<Startup> _logger;
+        private JsonSerializerOptions _jsonOptions;
 
-        public LocationsController(ApplicationContext appContext, ILogger<Startup> logger)
+        public LocationsController(ApplicationContext appContext, ILogger<Startup> logger, IPlrJsonOptions plrJsonOptions)
         {
             _db = appContext;
             _logger = logger;
+            _jsonOptions = plrJsonOptions.GetJsonOptions();
         }
 
 
@@ -33,11 +38,38 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult Get(int id)
         {
-            var data = (from loc in _db.Locations.Include(loc => loc.ParentLoc)
+            // Загрузка данных из БД
+            var allData = (from loc in _db.Locations
                         where loc.Id == id
-                        select new { loc.Id, loc.Name, loc.Desc, ParentLoc = loc.ParentLoc.Name, loc.ParentLocId }).FirstOrDefault();
+                        select new
+                        {
+                            Id = loc.Id,
+                            Name = loc.Name,
+                            Desc = loc.Desc,
+                            ParentLocName = loc.ParentLoc.Name,
+                            ParentLocId = loc.ParentLocId,
+                            Children = loc.Children
+                        }).FirstOrDefault();
 
-            return new JsonResult(data);
+            // Формирование выходного списка подлокаций
+            var children = new List<object>();
+            foreach(Location loc in allData.Children)
+            {
+                children.Add(new { Id = loc.Id, Name = loc.Name });
+            }
+
+            // Формирование выходной структуры
+            var data = new
+            {
+                Id = allData.Id,
+                Name = allData.Name,
+                Desc = allData.Desc,
+                ParentLocId = allData.ParentLocId,
+                ParentLocName = allData.ParentLocName,
+                Children = children
+            };
+
+            return new JsonResult(data, _jsonOptions);
         }
 
         [HttpGet]

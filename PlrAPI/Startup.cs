@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using PlrAPI.Systems;
 using Microsoft.AspNetCore.CookiePolicy;
+using PlrAPI.Systems.JsonOptions;
 
 namespace PlrAPI
 {
@@ -80,6 +81,8 @@ namespace PlrAPI
             services.AddControllers();
 
             services.AddRouting(options => options.LowercaseUrls = true);
+
+            services.AddSingleton<IPlrJsonOptions, PascalCaseJsonOptions>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

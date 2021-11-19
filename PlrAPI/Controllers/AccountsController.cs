@@ -81,6 +81,8 @@ namespace PlrAPI.Controllers
         [HttpPost]
         public IActionResult GetToken(AuthData authData)
         {
+            _logger.LogInformation($"Запрос на получение токенов с данными {authData.Login}, {authData.Password}.");
+
             // Получение данных пользователя
             User user = _authUtils.AuthAndGetUser(authData.Login, authData.Password);
             if (user == null)
