@@ -2,7 +2,7 @@
 
 ----
 [Описание системы](../../index.md) ➞ [Карточка локации](../location_card.md) ➞ Добавление/изменение карточки
-| [PlrAPI: Locations](../apidoc/api_locs.md)
+| [PlrAPI: Locations](../../apidoc/api_locs.md)
 
 ----
 

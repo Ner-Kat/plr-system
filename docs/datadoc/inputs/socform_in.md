@@ -2,7 +2,7 @@
 
 ----
 [Описание системы](../../index.md) ➞ [Карточка социального формирования](../socform_card.md) ➞ Добавление/изменение карточки
-| [PlrAPI: SocForms](../apidoc/api_socforms.md)
+| [PlrAPI: SocForms](../../apidoc/api_socforms.md)
 
 ----
 

@@ -2,7 +2,7 @@
 
 ----
 [Описание системы](../../index.md) ➞ [Карточка персонажа](../char_card.md) ➞ Добавление/изменение карточки
-| [PlrAPI: Characters](../apidoc/api_chars.md)
+| [PlrAPI: Characters](../../apidoc/api_chars.md)
 
 ----
 

@@ -2,7 +2,7 @@
 
 ----
 [Описание системы](../../index.md) ➞ [Карточка расы](../race_card.md) ➞ Добавление/изменение карточки
-| [PlrAPI: Races](../apidoc/api_races.md)
+| [PlrAPI: Races](../../apidoc/api_races.md)
 
 ----
 
