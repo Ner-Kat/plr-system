@@ -40,30 +40,40 @@ namespace PlrAPI.Controllers
                             on ch.BioMotherId equals mother.Id
                         where ch.Id == id
                         select new { 
-                            ch.Id, ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.GenderId, ch.LocBirthId, ch.LocDeathId, 
-                            ch.RaceId, ch.SocFormsId, ch.Growth, ch.BioFatherId, ch.BioMotherId, ch.ChildrenId, ch.Titles, 
-                            ch.ColorHair, ch.ColorEyes, ch.Desc, ch.AltCharsId, ch.Additions,
-                            GenderName = ch.Gender.Name, LocBirthName = ch.LocBirth.Name, LocDeathName = ch.LocDeath.Name, RaceName = ch.Race.Name,
-                            BioFatherName = father.Name, BioMotherName = mother.Name
+                            ch.Id, ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.Growth, ch.Titles,
+                            ch.ColorHair, ch.ColorEyes, ch.Desc, ch.Additions,
+                            Gender = ch.Gender, LocBirth = ch.LocBirth, LocDeath = ch.LocDeath, Race = ch.Race,
+                            SocForms = ch.SocForms, ChildrenIds = ch.ChildrenId, ch.AltCharsId,
+                            BioFather = father, BioMother = mother, 
                         }).FirstOrDefault();
 
-            // Загрузка списка социальных формирований
-            var socForms = _db.SocialFormations.Where(sf => charData.SocFormsId.Contains(sf.Id)).Select(sf => new { sf.Id, sf.Name }).ToList();
-
             // Загрузка списка детей
-            var children = _db.Characters.Where(c => charData.ChildrenId.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
+            var children = _db.Characters.Where(c => charData.ChildrenIds.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
 
             // Загрузка списка альтернативных карточек
             var altChars = _db.Characters.Where(c => charData.AltCharsId.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
 
+            // Формирование списка социальных формирований
+            var socForms = new List<object>();
+            foreach (SocialFormation socForm in charData.SocForms)
+            {
+                socForms.Add(new { Id = socForm.Id, Name = socForm.Name });
+            }
 
-            var data = new { Id = charData.Id, Name = charData.Name, AltNames = charData.AltNames, DateBirth = charData.DateBirth, DateDeath = charData.DateDeath,
-                GenderId = charData.GenderId, LocBirthId = charData.LocBirthId, LocDeathId = charData.LocDeathId, RaceId = charData.RaceId, SocFormsId = charData.SocFormsId,
-                Growth = charData.Growth, BioFatherId = charData.BioFatherId, BioMotherId = charData.BioMotherId, ChildrenId = charData.ChildrenId, Titles = charData.Titles,
-                ColorHair = charData.ColorHair, ColorEyes = charData.ColorEyes, Desc = charData.Desc, AltCharsId = charData.AltCharsId, Additions = charData.Additions,
-                GenderName = charData.GenderName, LocBirthName = charData.LocBirthName, LocDeathName = charData.LocDeathName, RaceName = charData.RaceName,
-                BioFatherName = charData.BioFatherName, BioMotherName = charData.BioMotherName,
-                SocialFormations = socForms, Children = children, AltCharCards = altChars };
+            var data = new {
+                Id = charData.Id, Name = charData.Name, AltNames = charData.AltNames, DateBirth = charData.DateBirth, DateDeath = charData.DateDeath, Growth = charData.Growth,
+                Titles = charData.Titles, ColorHair = charData.ColorHair, ColorEyes = charData.ColorEyes, Desc = charData.Desc, Additions = charData.Additions,
+
+                Gender = charData.Gender is not null ? new { Id = charData.Gender.Id, Name = charData.Gender.Name } : null,
+                LocBirth = charData.LocBirth is not null ? new { Id = charData.LocBirth.Id, Name = charData.LocBirth.Name } : null,
+                LocDeath = charData.LocDeath is not null ? new { Id = charData.LocDeath.Id, Name = charData.LocDeath.Name } : null,
+                Race = charData.Race is not null ? new { Id = charData.Race.Id, Name = charData.Race.Name } : null,
+
+                SocForms = socForms, Children = children, AltChars = altChars,
+
+                BioFather = charData.BioFather is not null ? new { Id = charData.BioFather.Id, Name = charData.BioFather.Name } : null,
+                BioMother = charData.BioMother is not null ? new { Id = charData.BioMother.Id, Name = charData.BioMother.Name } : null
+            };
             return new JsonResult(data);
         }
 
@@ -99,7 +109,7 @@ namespace PlrAPI.Controllers
         {
             try
             {
-                _db.Characters.Add(character.ToCharacter(() => GetSocForms(character.SocFormsId)));
+                _db.Characters.Add(character.ToCharacter(() => GetSocForms(character.SocFormsIds)));
                 _db.SaveChanges();
 
                 return Ok();
@@ -117,7 +127,7 @@ namespace PlrAPI.Controllers
             try
             {
                 Character oldChar = _db.Characters.Where(c => c.Id == character.Id).FirstOrDefault();
-                character.WriteIn(oldChar, () => GetSocForms(character.SocFormsId));
+                character.WriteIn(oldChar, () => GetSocForms(character.SocFormsIds));
                 _db.SaveChanges();
 
                 return Ok();

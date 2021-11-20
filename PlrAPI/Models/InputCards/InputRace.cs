@@ -36,7 +36,7 @@ namespace PlrAPI.Models.InputCards
             if (Name != null && !Name.Equals(""))
                 race.Name = Name;
 
-            if (Desc != null && !Desc.Equals(""))
+            if (Desc != null)
                 race.Desc = Desc;
         }
     }

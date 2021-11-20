@@ -37,7 +37,7 @@ namespace PlrAPI.Models.InputCards
         public int? RaceId { get; set; }
 
         // Все варианты национальной или общественной идентификация персонажа.
-        public int[] SocFormsId { get; set; }
+        public int[] SocFormsIds { get; set; }
 
         // Рост персонажа
         public int? Growth { get; set; }
@@ -49,7 +49,7 @@ namespace PlrAPI.Models.InputCards
         public int? BioMotherId { get; set; }
 
         // Список ID детей.
-        public int[] ChildrenId { get; set; }
+        public int[] ChildrenIds { get; set; }
 
         // Титулы, звания и ранги персонажа.
         public string[] Titles { get; set; }
@@ -64,7 +64,7 @@ namespace PlrAPI.Models.InputCards
         public string Desc { get; set; }
 
         // Список ID других личностей персонажа.
-        public int[] AltCharsId { get; set; }
+        public int[] AltCharsIds { get; set; }
 
         // Дополнительная информация о персонаже.
         public string[,] Additions { get; set; }
@@ -83,16 +83,16 @@ namespace PlrAPI.Models.InputCards
                 LocBirthId = this.LocBirthId,
                 LocDeathId = this.LocDeathId,
                 RaceId = this.RaceId,
-                SocFormsId = new List<int>(this.SocFormsId),
+                SocFormsId = new List<int>(this.SocFormsIds),
                 Growth = this.Growth,
                 BioFatherId = this.BioFatherId,
                 BioMotherId = this.BioMotherId,
-                ChildrenId = new List<int>(this.ChildrenId),
+                ChildrenId = new List<int>(this.ChildrenIds),
                 Titles = new List<string>(this.Titles),
                 ColorHair = this.ColorHair,
                 ColorEyes = this.ColorEyes,
                 Desc = this.Desc,
-                AltCharsId = new List<int>(this.AltCharsId),
+                AltCharsId = new List<int>(this.AltCharsIds),
                 Additions = this.Additions,
                 SocForms = socFormsfill()
             };
@@ -142,31 +142,61 @@ namespace PlrAPI.Models.InputCards
                 character.DateDeath = GetDateTime(DateDeath);
 
             if (GenderId.HasValue)
-                character.GenderId = GenderId;
+            {
+                if (GenderId.Value == -1)
+                    character.GenderId = null;
+                else
+                    character.GenderId = GenderId;
+            }
 
             if (LocBirthId.HasValue)
-                character.LocBirthId = LocBirthId;
+            {
+                if (LocBirthId.Value == -1)
+                    character.LocBirthId = null;
+                else
+                    character.LocBirthId = LocBirthId;
+            }
 
             if (LocDeathId.HasValue)
-                character.LocDeathId = LocDeathId;
+            {
+                if (LocDeathId.Value == -1)
+                    character.LocDeathId = null;
+                else
+                    character.LocDeathId = LocDeathId;
+            }
 
             if (RaceId.HasValue)
-                character.RaceId = RaceId;
+            {
+                if (RaceId.Value == -1)
+                    character.RaceId = null;
+                else
+                    character.RaceId = RaceId;
+            }
 
-            if (SocFormsId != null)
-                character.SocFormsId = new List<int>(SocFormsId);
+            if (SocFormsIds != null)
+                character.SocFormsId = new List<int>(SocFormsIds);
 
             if (Growth.HasValue)
                 character.Growth = Growth;
 
             if (BioFatherId.HasValue)
-                character.BioFatherId = BioFatherId;
+            {
+                if (BioFatherId.Value == -1)
+                    character.BioFatherId = null;
+                else
+                    character.BioFatherId = BioFatherId;
+            }
 
             if (BioMotherId.HasValue)
-                character.BioMotherId = BioMotherId;
+            {
+                if (BioMotherId.Value == -1)
+                    character.BioMotherId = null;
+                else
+                    character.BioMotherId = BioMotherId;
+            }
 
-            if (ChildrenId != null)
-                character.ChildrenId = new List<int>(ChildrenId);
+            if (ChildrenIds != null)
+                character.ChildrenId = new List<int>(ChildrenIds);
 
             if (Titles != null)
                 character.Titles = new List<string>(Titles);
@@ -177,11 +207,11 @@ namespace PlrAPI.Models.InputCards
             if (ColorEyes.HasValue)
                 character.ColorEyes = ColorEyes;
 
-            if (Desc != null && !Name.Equals(""))
+            if (Desc != null)
                 character.Desc = Desc;
 
-            if (AltCharsId != null)
-                character.AltCharsId = new List<int>(AltCharsId);
+            if (AltCharsIds != null)
+                character.AltCharsId = new List<int>(AltCharsIds);
 
             if (Additions != null)
                 character.Additions = Additions;

@@ -36,7 +36,7 @@ namespace PlrAPI.Models.InputCards
             if (Name != null && !Name.Equals(""))
                 socialFormation.Name = Name;
 
-            if (Desc != null && !Desc.Equals(""))
+            if (Desc != null)
                 socialFormation.Desc = Desc;
         }
     }
