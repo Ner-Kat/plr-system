@@ -40,11 +40,16 @@ namespace PlrAPI.Models.InputCards
             if (Name != null && !Name.Equals(""))
                 location.Name = Name;
 
-            if (Desc != null && !Desc.Equals(""))
+            if (Desc != null)
                 location.Desc = Desc;
 
             if (ParentLocId.HasValue)
-                location.ParentLocId = ParentLocId;
+            {
+                if (ParentLocId.Value == -1)
+                    location.ParentLocId = null;
+                else
+                    location.ParentLocId = ParentLocId;
+            }
         }
     }
 }

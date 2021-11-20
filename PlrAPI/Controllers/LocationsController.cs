@@ -46,8 +46,7 @@ namespace PlrAPI.Controllers
                             Id = loc.Id,
                             Name = loc.Name,
                             Desc = loc.Desc,
-                            ParentLocName = loc.ParentLoc.Name,
-                            ParentLocId = loc.ParentLocId,
+                            ParentLoc = loc.ParentLoc,
                             Children = loc.Children
                         }).FirstOrDefault();
 
@@ -58,14 +57,16 @@ namespace PlrAPI.Controllers
                 children.Add(new { Id = loc.Id, Name = loc.Name });
             }
 
+            // Формирование родительской локации
+            var parentLoc = allData.ParentLoc is not null ? new { Id = allData.ParentLoc.Id, Name = allData.ParentLoc.Name } : null;
+
             // Формирование выходной структуры
             var data = new
             {
                 Id = allData.Id,
                 Name = allData.Name,
                 Desc = allData.Desc,
-                ParentLocId = allData.ParentLocId,
-                ParentLocName = allData.ParentLocName,
+                ParentLoc = parentLoc,
                 Children = children
             };
 
