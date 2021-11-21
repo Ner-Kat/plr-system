@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PlrAPI.Systems;
+using System.Text.Json;
 
 namespace PlrAPI.Controllers
 {
@@ -17,10 +19,12 @@ namespace PlrAPI.Controllers
     public class SocFormsController : ControllerBase
     {
         private ApplicationContext _db;
+        private JsonSerializerOptions _jsonOptions;
 
-        public SocFormsController(ApplicationContext appContext)
+        public SocFormsController(ApplicationContext appContext, IPlrJsonOptions plrJsonOptions)
         {
             _db = appContext;
+            _jsonOptions = plrJsonOptions.GetJsonOptions();
         }
 
 
@@ -31,7 +35,7 @@ namespace PlrAPI.Controllers
         {
             var data = _db.SocialFormations.Where(sf => sf.Id == id).Select(sf => new { sf.Id, sf.Name, sf.Desc }).FirstOrDefault();
 
-            return new JsonResult(data);
+            return new JsonResult(data, _jsonOptions);
         }
 
         [HttpGet]
@@ -41,13 +45,13 @@ namespace PlrAPI.Controllers
             {
                 var data = _db.SocialFormations.Select(sf => new { sf.Id, sf.Name })
                     .Skip(from.Value).Take(count.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
             else
             {
                 var data = _db.SocialFormations.Select(sf => new { sf.Id, sf.Name })
                     .Skip(from.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
         }
 
@@ -58,7 +62,7 @@ namespace PlrAPI.Controllers
                         where socForm.Name.ToLower().Contains(name.ToLower())
                         select new { socForm.Id, socForm.Name }).ToList();
 
-            return new JsonResult(data);
+            return new JsonResult(data, _jsonOptions);
         }
 
         [Authorize(Policy = "ForEditors")]
@@ -122,13 +126,13 @@ namespace PlrAPI.Controllers
             {
                 var data = _db.SocialFormations.OrderBy(sf => sf.Name).Select(sf => new { sf.Id, sf.Name })
                     .Skip(from.Value).Take(count.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
             else
             {
                 var data = _db.SocialFormations.OrderBy(sf => sf.Name).Select(sf => new { sf.Id, sf.Name })
                     .Skip(from.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
         }
     }

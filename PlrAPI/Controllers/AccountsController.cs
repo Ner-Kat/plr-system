@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using PlrAPI.Systems;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace PlrAPI.Controllers
 {
@@ -25,12 +26,14 @@ namespace PlrAPI.Controllers
         private ApplicationContext _db;
         private AuthUtils _authUtils;
         private ILogger _logger;
+        private JsonSerializerOptions _jsonOptions;
 
-        public AccountsController(ApplicationContext appContext, AuthUtils authUtils, ILogger<Startup> logger)
+        public AccountsController(ApplicationContext appContext, AuthUtils authUtils, ILogger<Startup> logger, IPlrJsonOptions plrJsonOptions)
         {
             _db = appContext;
             _authUtils = authUtils;
             _logger = logger;
+            _jsonOptions = plrJsonOptions.GetJsonOptions();
         }
 
         [HttpPost]
@@ -99,7 +102,7 @@ namespace PlrAPI.Controllers
                 access_token = encodedJwt,
                 refresh_token = user.RefreshToken
             };
-            return new JsonResult(response);
+            return new JsonResult(response, _jsonOptions);
         }
 
         [HttpPost]
@@ -121,7 +124,7 @@ namespace PlrAPI.Controllers
                 access_token = encodedJwt,
                 refresh_token = user.RefreshToken
             };
-            return new JsonResult(response);
+            return new JsonResult(response, _jsonOptions);
         }
 
         [Authorize]
@@ -154,7 +157,7 @@ namespace PlrAPI.Controllers
                 return new JsonResult(users.TakeWhile((u, index) => index >= from && index < from + count).ToList());
             }
 
-            return new JsonResult(users.ToList());
+            return new JsonResult(users.ToList(), _jsonOptions);
         }
 
         [Authorize(Policy = "ForAdmins")]

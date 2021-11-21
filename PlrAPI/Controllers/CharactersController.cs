@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Authorization;
 using PlrAPI.Models.InputCards;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using PlrAPI.Systems;
+using System.Text.Json;
 
 namespace PlrAPI.Controllers
 {
@@ -19,10 +21,12 @@ namespace PlrAPI.Controllers
     public class CharactersController : ControllerBase
     {
         private ApplicationContext _db;
+        private JsonSerializerOptions _jsonOptions;
 
-        public CharactersController(ApplicationContext appContext)
+        public CharactersController(ApplicationContext appContext, IPlrJsonOptions plrJsonOptions)
         {
             _db = appContext;
+            _jsonOptions = plrJsonOptions.GetJsonOptions();
         }
 
 
@@ -85,7 +89,7 @@ namespace PlrAPI.Controllers
                 BioFather = charData.BioFather is not null ? new { Id = charData.BioFather.Id, Name = charData.BioFather.Name } : null,
                 BioMother = charData.BioMother is not null ? new { Id = charData.BioMother.Id, Name = charData.BioMother.Name } : null
             };
-            return new JsonResult(data);
+            return new JsonResult(data, _jsonOptions);
         }
 
         [HttpGet]
@@ -95,13 +99,13 @@ namespace PlrAPI.Controllers
             {
                 var data = _db.Characters.Select(c => new { c.Id, c.Name })
                     .Skip(from.Value).Take(count.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
             else
             {
                 var data = _db.Characters.Select(c => new { c.Id, c.Name })
                     .Skip(from.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
         }
 
@@ -111,7 +115,7 @@ namespace PlrAPI.Controllers
             var data = _db.Characters.Where(c => c.Name.ToLower().Contains(name.ToLower()) || ContainsWithIgnoringCase(c.AltNames, name))
                 .Select(c => new { c.Id, c.Name }).ToList();
 
-            return new JsonResult(data);
+            return new JsonResult(data, _jsonOptions);
         }
 
         [Authorize(Policy = "ForEditors")]
@@ -179,13 +183,13 @@ namespace PlrAPI.Controllers
             {
                 var data = _db.Characters.OrderBy(c => c.Name).Select(c => new { c.Id, c.Name })
                     .Skip(from.Value).Take(count.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
             else
             {
                 var data = _db.Characters.OrderBy(c => c.Name).Select(c => new { c.Id, c.Name })
                     .Skip(from.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
         }
 

@@ -86,7 +86,7 @@ namespace PlrAPI.Controllers
             {
                 var data = _db.Locations.Select(loc => new { loc.Id, loc.Name })
                     .Skip(from.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
         }
 
@@ -97,7 +97,7 @@ namespace PlrAPI.Controllers
                         where loc.Name.ToLower().Contains(name.ToLower())
                         select new { loc.Id, loc.Name }).ToList();
 
-            return new JsonResult(data);
+            return new JsonResult(data, _jsonOptions);
         }
 
         [Authorize(Policy = "ForEditors")]
@@ -167,7 +167,7 @@ namespace PlrAPI.Controllers
             {
                 var data = _db.Locations.OrderBy(loc => loc.Name).Select(loc => new { loc.Id, loc.Name })
                     .Skip(from.Value).ToList();
-                return new JsonResult(data);
+                return new JsonResult(data, _jsonOptions);
             }
         }
 
@@ -183,7 +183,7 @@ namespace PlrAPI.Controllers
             var data = _db.Locations.Where(loc => loc.Id == id).FirstOrDefault()
                 .Children.Select(loc => new { loc.Id, loc.Name }).ToList();
 
-            return new JsonResult(data);
+            return new JsonResult(data, _jsonOptions);
         }
 
         [HttpGet]
@@ -192,7 +192,7 @@ namespace PlrAPI.Controllers
             var data = _db.Locations.Where(loc => !loc.ParentLocId.HasValue)
                 .Select(loc => new { loc.Id, loc.Name }).ToList();
 
-            return new JsonResult(data);
+            return new JsonResult(data, _jsonOptions);
         }
 
     }
