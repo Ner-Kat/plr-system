@@ -81,6 +81,6 @@ namespace PlrAPI.Models.Database
         public List<int> AltCharsId { get; set; }
 
         // Дополнительная информация о персонаже.
-        public string[,] Additions { get; set; }
+        public List<CharAdditionalValue> CharAdditionalValues { get; set; }
     }
 }

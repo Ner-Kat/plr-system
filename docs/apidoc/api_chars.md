@@ -124,22 +124,3 @@
 
 Возвращаемые данные - `characters list` - содержат значения полей `Id` и `Name` каждого персонажа.
 <br/><br/>
-
-### Запрос укороченных данных о персонаже
-
-**Доступ:** требуется аутентификация.
-
-|	Адрес метода				|	Тип запроса			|	Параметры			| Ответ
-|	:----:						|	:----:				|	:----:				| :----:
-| **/api/characters/getshort**	|	GET					| id					| JSON:<br/>short character data
-
-**Значения параметров:**
-* `id` : уникальный ID персонажа.
-
-Метод возвращает `short character data` - набор данных о персонаже по запрошенному ID. Эти данные содержат значения некоторых из полей, описанных в [карточке персонажа](../datadoc/char_card.md) и помеченных как выходные *(Out)*. Текущий метод возвращает только ID для тех данных, которые являются ссылками на другие карточки данных.
-
-**Полный список возвращаемых полей:**
-
-<small>`Name`, `AltNames`, `DateBirth`, `DateDeath`, `GenderId`, `LocBirthId`, `LocDeathId`, `RaceId`, `SocFormsId`, `Growth`, `BioFatherId`, `BioMotherId`, `ChildrenId`, `Titles`, `ColorHair`, `ColorEyes`, `Desc`, `AltCharsId`, `Additions`</small>
-
-<br/><br/>

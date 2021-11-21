@@ -41,7 +41,7 @@ namespace PlrAPI.Controllers
                         where ch.Id == id
                         select new { 
                             ch.Id, ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.Growth, ch.Titles,
-                            ch.ColorHair, ch.ColorEyes, ch.Desc, ch.Additions,
+                            ch.ColorHair, ch.ColorEyes, ch.Desc, Additions = ch.CharAdditionalValues,
                             Gender = ch.Gender, LocBirth = ch.LocBirth, LocDeath = ch.LocDeath, Race = ch.Race,
                             SocForms = ch.SocForms, ChildrenIds = ch.ChildrenId, ch.AltCharsId,
                             BioFather = father, BioMother = mother, 
@@ -60,9 +60,20 @@ namespace PlrAPI.Controllers
                 socForms.Add(new { Id = socForm.Id, Name = socForm.Name });
             }
 
+            // Формирование набора дополнительных полей
+            var additionalFields = new List<object>();
+            foreach (CharAdditionalValue field in charData.Additions)
+            {
+                additionalFields.Add(new { 
+                    TypeId = field.AdditionalFieldTypeId, 
+                    TypeName = field.AdditionalFieldType.Name,
+                    Value = field.Value
+                });
+            }
+
             var data = new {
                 Id = charData.Id, Name = charData.Name, AltNames = charData.AltNames, DateBirth = charData.DateBirth, DateDeath = charData.DateDeath, Growth = charData.Growth,
-                Titles = charData.Titles, ColorHair = charData.ColorHair, ColorEyes = charData.ColorEyes, Desc = charData.Desc, Additions = charData.Additions,
+                Titles = charData.Titles, ColorHair = charData.ColorHair, ColorEyes = charData.ColorEyes, Desc = charData.Desc, Additions = additionalFields,
 
                 Gender = charData.Gender is not null ? new { Id = charData.Gender.Id, Name = charData.Gender.Name } : null,
                 LocBirth = charData.LocBirth is not null ? new { Id = charData.LocBirth.Id, Name = charData.LocBirth.Name } : null,
@@ -109,7 +120,9 @@ namespace PlrAPI.Controllers
         {
             try
             {
-                _db.Characters.Add(character.ToCharacter(() => GetSocForms(character.SocFormsIds)));
+                _db.Characters.Add(character.ToCharacter(
+                    () => GetSocForms(character.SocFormsIds), () => FormAdditionals(character.Additions, character.Id)
+                    ));
                 _db.SaveChanges();
 
                 return Ok();
@@ -127,7 +140,9 @@ namespace PlrAPI.Controllers
             try
             {
                 Character oldChar = _db.Characters.Where(c => c.Id == character.Id).FirstOrDefault();
-                character.WriteIn(oldChar, () => GetSocForms(character.SocFormsIds));
+                character.WriteIn(
+                    oldChar, () => GetSocForms(character.SocFormsIds), () => FormAdditionals(character.Additions, character.Id)
+                    );
                 _db.SaveChanges();
 
                 return Ok();
@@ -177,20 +192,20 @@ namespace PlrAPI.Controllers
 
         // Дополнительные методы API
 
-        [HttpGet]
-        public JsonResult GetShort(int id)
-        {
-            var charData = (from ch in _db.Characters
-                        where ch.Id == id
-                        select new { 
-                            ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.GenderId, ch.LocBirthId, ch.LocDeathId, 
-                            ch.RaceId, ch.SocFormsId, ch.Growth, ch.BioFatherId, ch.BioMotherId, ch.ChildrenId, ch.Titles, 
-                            ch.ColorHair, ch.ColorEyes, ch.Desc, ch.AltCharsId, ch.Additions
-                        }).FirstOrDefault();
+        //[HttpGet]
+        //public JsonResult GetShort(int id)
+        //{
+        //    var charData = (from ch in _db.Characters
+        //                where ch.Id == id
+        //                select new { 
+        //                    ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.GenderId, ch.LocBirthId, ch.LocDeathId, 
+        //                    ch.RaceId, ch.SocFormsId, ch.Growth, ch.BioFatherId, ch.BioMotherId, ch.ChildrenId, ch.Titles, 
+        //                    ch.ColorHair, ch.ColorEyes, ch.Desc, ch.AltCharsId
+        //                }).FirstOrDefault();
 
-            var data = new { mainData = charData };
-            return new JsonResult(data);
-        }
+        //    var data = new { mainData = charData };
+        //    return new JsonResult(data);
+        //}
 
 
         // Вспомогательные методы
@@ -214,6 +229,54 @@ namespace PlrAPI.Controllers
                 return _db.SocialFormations.Where(sf => indexes.Contains(sf.Id)).ToList();
             else
                 return new List<SocialFormation>();
+        }
+
+        [NonAction]
+        private List<CharAdditionalValue> FormAdditionals(Dictionary<string, string> newAdditions, int charId)
+        {
+            var additions = _db.CharAdditionalValues.Where(cav => cav.CharacterId == charId).ToList();
+
+            foreach (var oldAdd in additions)
+            {
+                string fieldName = oldAdd.AdditionalFieldType.Name;
+
+                // Изменение существующих значений
+                if (newAdditions.ContainsKey(fieldName))
+                {
+                    oldAdd.Value = newAdditions[fieldName];
+                    newAdditions.Remove(fieldName);
+                }
+                // Удаление неиспользуемых значений
+                else
+                {
+                    additions.Remove(oldAdd);
+                    _db.CharAdditionalValues.Remove(oldAdd);
+                }
+            }
+
+            // Добавление новых значений
+            foreach (var newAdd in newAdditions)
+            {
+                var fieldType = _db.AdditionalFieldTypes.FirstOrDefault(aft => aft.Name == newAdd.Key);
+                CharAdditionalValue newAddEntry = null;
+
+                // Если поле такого типа уже существует
+                if (fieldType is not null)
+                {
+                    newAddEntry = new CharAdditionalValue { AdditionalFieldTypeId = fieldType.Id, Value = newAdd.Value, CharacterId = charId };
+                }
+                // Если поле полностью новое
+                else
+                {
+                    fieldType = _db.AdditionalFieldTypes.Add(new AdditionalFieldType { Name = newAdd.Key }).Entity;
+                    newAddEntry = new CharAdditionalValue { AdditionalFieldTypeId = fieldType.Id, Value = newAdd.Value, CharacterId = charId };
+                }
+
+                _db.CharAdditionalValues.Add(newAddEntry);
+            }
+
+            _db.SaveChanges();
+            return additions;
         }
     }
 }

@@ -67,11 +67,11 @@ namespace PlrAPI.Models.InputCards
         public int[] AltCharsIds { get; set; }
 
         // Дополнительная информация о персонаже.
-        public string[,] Additions { get; set; }
+        public Dictionary<string, string> Additions { get; set; }
 
 
         // Преобразовать к объекту Character (объекту БД)
-        public Character ToCharacter(Func<List<SocialFormation>> socFormsfill)
+        public Character ToCharacter(Func<List<SocialFormation>> socFormsfill, Func<List<CharAdditionalValue>> additionalFieldsFill)
         {
             Character character = new Character
             {
@@ -93,8 +93,8 @@ namespace PlrAPI.Models.InputCards
                 ColorEyes = this.ColorEyes,
                 Desc = this.Desc,
                 AltCharsId = new List<int>(this.AltCharsIds),
-                Additions = this.Additions,
-                SocForms = socFormsfill()
+                SocForms = socFormsfill(),
+                CharAdditionalValues = additionalFieldsFill()
             };
 
             return character;
@@ -127,7 +127,7 @@ namespace PlrAPI.Models.InputCards
         }
 
         // Записать значения в объект Character (объект БД)
-        public void WriteIn(Character character, Func<List<SocialFormation>> socFormsfill)
+        public void WriteIn(Character character, Func<List<SocialFormation>> socFormsfill, Func<List<CharAdditionalValue>> additionalFieldsFill)
         {
             if (Name != null && !Name.Equals(""))
                 character.Name = Name;
@@ -213,10 +213,9 @@ namespace PlrAPI.Models.InputCards
             if (AltCharsIds != null)
                 character.AltCharsId = new List<int>(AltCharsIds);
 
-            if (Additions != null)
-                character.Additions = Additions;
-
             character.SocForms = socFormsfill();
+
+            character.CharAdditionalValues = additionalFieldsFill();
         }
     }
 }
