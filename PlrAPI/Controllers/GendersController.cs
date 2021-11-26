@@ -29,7 +29,7 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult List()
         {
-            return new JsonResult(_db.Genders.Select(g => new { g.Id, g.Name }).ToList(), _jsonOptions);
+            return new JsonResult(_db.Genders.Select(g => new { g.Id, g.Name }).OrderBy(g => g.Id).ToList(), _jsonOptions);
         }
 
         [HttpGet]

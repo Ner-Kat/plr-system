@@ -97,13 +97,13 @@ namespace PlrAPI.Controllers
         {
             if (count.HasValue)
             {
-                var data = _db.Characters.Select(c => new { c.Id, c.Name })
+                var data = _db.Characters.Select(c => new { c.Id, c.Name }).OrderBy(c => c.Id)
                     .Skip(from.Value).Take(count.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
             else
             {
-                var data = _db.Characters.Select(c => new { c.Id, c.Name })
+                var data = _db.Characters.Select(c => new { c.Id, c.Name }).OrderBy(c => c.Id)
                     .Skip(from.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
@@ -113,7 +113,7 @@ namespace PlrAPI.Controllers
         public JsonResult Find(string name)
         {
             var data = _db.Characters.Where(c => c.Name.ToLower().Contains(name.ToLower()) || ContainsWithIgnoringCase(c.AltNames, name))
-                .Select(c => new { c.Id, c.Name }).ToList();
+                .Select(c => new { c.Id, c.Name }).OrderBy(c => c.Id).ToList();
 
             return new JsonResult(data, _jsonOptions);
         }
@@ -230,7 +230,7 @@ namespace PlrAPI.Controllers
         private List<SocialFormation> GetSocForms(int[] indexes)
         {
             if (indexes != null)
-                return _db.SocialFormations.Where(sf => indexes.Contains(sf.Id)).ToList();
+                return _db.SocialFormations.Where(sf => indexes.Contains(sf.Id)).OrderBy(sf => sf.Id).ToList();
             else
                 return new List<SocialFormation>();
         }
@@ -238,7 +238,7 @@ namespace PlrAPI.Controllers
         [NonAction]
         private List<CharAdditionalValue> FormAdditionals(Dictionary<string, string> newAdditions, int charId)
         {
-            var additions = _db.CharAdditionalValues.Where(cav => cav.CharacterId == charId).ToList();
+            var additions = _db.CharAdditionalValues.Where(cav => cav.CharacterId == charId).OrderBy(cav => cav.Id).ToList();
 
             foreach (var oldAdd in additions)
             {

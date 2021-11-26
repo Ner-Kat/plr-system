@@ -43,13 +43,13 @@ namespace PlrAPI.Controllers
         {
             if (count.HasValue)
             {
-                var data = _db.SocialFormations.Select(sf => new { sf.Id, sf.Name })
+                var data = _db.SocialFormations.Select(sf => new { sf.Id, sf.Name }).OrderBy(sf => sf.Id)
                     .Skip(from.Value).Take(count.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
             else
             {
-                var data = _db.SocialFormations.Select(sf => new { sf.Id, sf.Name })
+                var data = _db.SocialFormations.Select(sf => new { sf.Id, sf.Name }).OrderBy(sf => sf.Id)
                     .Skip(from.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
@@ -60,6 +60,7 @@ namespace PlrAPI.Controllers
         {
             var data = (from socForm in _db.SocialFormations
                         where socForm.Name.ToLower().Contains(name.ToLower())
+                        orderby socForm.Id
                         select new { socForm.Id, socForm.Name }).ToList();
 
             return new JsonResult(data, _jsonOptions);
@@ -125,13 +126,13 @@ namespace PlrAPI.Controllers
             if (count.HasValue)
             {
                 var data = _db.SocialFormations.OrderBy(sf => sf.Name).Select(sf => new { sf.Id, sf.Name })
-                    .Skip(from.Value).Take(count.Value).ToList();
+                    .OrderBy(sf => sf.Id).Skip(from.Value).Take(count.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
             else
             {
                 var data = _db.SocialFormations.OrderBy(sf => sf.Name).Select(sf => new { sf.Id, sf.Name })
-                    .Skip(from.Value).ToList();
+                    .OrderBy(sf => sf.Id).Skip(from.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
         }

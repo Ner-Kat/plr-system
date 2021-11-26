@@ -78,13 +78,13 @@ namespace PlrAPI.Controllers
         {
             if (count.HasValue)
             {
-                var data = _db.Locations.Select(loc => new { loc.Id, loc.Name })
+                var data = _db.Locations.Select(loc => new { loc.Id, loc.Name }).OrderBy(loc => loc.Id)
                     .Skip(from.Value).Take(count.Value).ToList();
                 return new JsonResult(data);
             }
             else
             {
-                var data = _db.Locations.Select(loc => new { loc.Id, loc.Name })
+                var data = _db.Locations.Select(loc => new { loc.Id, loc.Name }).OrderBy(loc => loc.Id)
                     .Skip(from.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
@@ -95,6 +95,7 @@ namespace PlrAPI.Controllers
         {
             var data = (from loc in _db.Locations
                         where loc.Name.ToLower().Contains(name.ToLower())
+                        orderby loc.Id
                         select new { loc.Id, loc.Name }).ToList();
 
             return new JsonResult(data, _jsonOptions);
@@ -160,13 +161,13 @@ namespace PlrAPI.Controllers
             if (count.HasValue)
             {
                 var data = _db.Locations.OrderBy(loc => loc.Name).Select(loc => new { loc.Id, loc.Name })
-                    .Skip(from.Value).Take(count.Value).ToList();
+                    .OrderBy(loc => loc.Id).Skip(from.Value).Take(count.Value).ToList();
                 return new JsonResult(data);
             }
             else
             {
                 var data = _db.Locations.OrderBy(loc => loc.Name).Select(loc => new { loc.Id, loc.Name })
-                    .Skip(from.Value).ToList();
+                    .OrderBy(loc => loc.Id).Skip(from.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
         }
@@ -181,7 +182,7 @@ namespace PlrAPI.Controllers
             //     .Select(loc => new { loc.Id, loc.Name }).ToList();
             
             var data = _db.Locations.Where(loc => loc.Id == id).FirstOrDefault()
-                .Children.Select(loc => new { loc.Id, loc.Name }).ToList();
+                .Children.Select(loc => new { loc.Id, loc.Name }).OrderBy(loc => loc.Id).ToList();
 
             return new JsonResult(data, _jsonOptions);
         }
@@ -190,7 +191,7 @@ namespace PlrAPI.Controllers
         public JsonResult RootLocations()
         {
             var data = _db.Locations.Where(loc => !loc.ParentLocId.HasValue)
-                .Select(loc => new { loc.Id, loc.Name }).ToList();
+                .Select(loc => new { loc.Id, loc.Name }).OrderBy(loc => loc.Id).ToList();
 
             return new JsonResult(data, _jsonOptions);
         }

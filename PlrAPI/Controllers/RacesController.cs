@@ -43,13 +43,13 @@ namespace PlrAPI.Controllers
         {
             if (count.HasValue)
             {
-                var data = _db.Races.Select(r => new { r.Id, r.Name })
+                var data = _db.Races.Select(r => new { r.Id, r.Name }).OrderBy(r => r.Id)
                     .Skip(from.Value).Take(count.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
             else
             {
-                var data = _db.Races.Select(r => new { r.Id, r.Name })
+                var data = _db.Races.Select(r => new { r.Id, r.Name }).OrderBy(r => r.Id)
                     .Skip(from.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
@@ -60,6 +60,7 @@ namespace PlrAPI.Controllers
         {
             var data = (from race in _db.Races
                         where race.Name.ToLower().Contains(name.ToLower())
+                        orderby race.Id
                         select new { race.Id, race.Name }).ToList();
 
             return new JsonResult(data, _jsonOptions);
@@ -125,13 +126,13 @@ namespace PlrAPI.Controllers
             if (count.HasValue)
             {
                 var data = _db.Races.OrderBy(r => r.Name).Select(r => new { r.Id, r.Name })
-                    .Skip(from.Value).Take(count.Value).ToList();
+                    .OrderBy(r => r.Id).Skip(from.Value).Take(count.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
             else
             {
                 var data = _db.Races.OrderBy(r => r.Name).Select(r => new { r.Id, r.Name })
-                    .Skip(from.Value).ToList();
+                    .OrderBy(r => r.Id).Skip(from.Value).ToList();
                 return new JsonResult(data, _jsonOptions);
             }
         }
