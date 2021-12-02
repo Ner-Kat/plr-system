@@ -22,11 +22,13 @@ namespace PlrAPI.Controllers
     {
         private ApplicationContext _db;
         private JsonSerializerOptions _jsonOptions;
+        private ILogger<Startup> _logger;
 
-        public CharactersController(ApplicationContext appContext, IPlrJsonOptions plrJsonOptions)
+        public CharactersController(ApplicationContext appContext, IPlrJsonOptions plrJsonOptions, ILogger<Startup> logger)
         {
             _db = appContext;
             _jsonOptions = plrJsonOptions.GetJsonOptions();
+            _logger = logger;
         }
 
 
@@ -35,44 +37,57 @@ namespace PlrAPI.Controllers
         [HttpGet]
         public JsonResult Get(int id)
         {
-            // Загрузка всех основных данных персонажа
-            // var charData = (from ch in _db.Characters.Include(c => c.Gender).Include(c => c.LocBirth).Include(c => c.LocDeath).Include(c => c.Race)
             var charData = (from ch in _db.Characters
-                        join father in _db.Characters
-                            on ch.BioFatherId equals father.Id
-                        join mother in _db.Characters
-                            on ch.BioMotherId equals mother.Id
                         where ch.Id == id
                         select new { 
                             ch.Id, ch.Name, ch.AltNames, ch.DateBirth, ch.DateDeath, ch.Growth, ch.Titles,
                             ch.ColorHair, ch.ColorEyes, ch.Desc, Additions = ch.CharAdditionalValues,
                             Gender = ch.Gender, LocBirth = ch.LocBirth, LocDeath = ch.LocDeath, Race = ch.Race,
                             SocForms = ch.SocForms, ChildrenIds = ch.ChildrenId, ch.AltCharsId,
-                            BioFather = father, BioMother = mother, 
+                            BioFatherId = ch.BioFatherId, BioMotherId = ch.BioMotherId,
                         }).FirstOrDefault();
 
+            // Загрузка родителей
+            dynamic father = null;
+            if (charData.BioFatherId is not null)
+                father = _db.Characters.Where(c => c.Id == charData.BioFatherId).Select(c => new { c.Id, c.Name }).FirstOrDefault();
+            dynamic mother = null;
+            if (charData.BioMotherId is not null)
+                mother = _db.Characters.Where(c => c.Id == charData.BioMotherId).Select(c => new { c.Id, c.Name }).FirstOrDefault();
+
             // Загрузка списка детей
-            var children = _db.Characters.Where(c => charData.ChildrenIds.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
+            dynamic children = null;
+            if (charData.ChildrenIds is not null)
+                children = _db.Characters.Where(c => charData.ChildrenIds.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
 
             // Загрузка списка альтернативных карточек
-            var altChars = _db.Characters.Where(c => charData.AltCharsId.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
+            dynamic altChars = null;
+            if (charData.AltCharsId is not null)
+                altChars = _db.Characters.Where(c => charData.AltCharsId.Contains(c.Id)).Select(c => new { c.Id, c.Name }).ToList();
 
             // Формирование списка социальных формирований
             var socForms = new List<object>();
-            foreach (SocialFormation socForm in charData.SocForms)
+            if (charData.SocForms is not null)
             {
-                socForms.Add(new { Id = socForm.Id, Name = socForm.Name });
+                foreach (SocialFormation socForm in charData.SocForms)
+                {
+                    socForms.Add(new { Id = socForm.Id, Name = socForm.Name });
+                }
             }
 
             // Формирование набора дополнительных полей
             var additionalFields = new List<object>();
-            foreach (CharAdditionalValue field in charData.Additions)
+            if (charData.Additions is not null)
             {
-                additionalFields.Add(new { 
-                    TypeId = field.AdditionalFieldTypeId, 
-                    TypeName = field.AdditionalFieldType.Name,
-                    Value = field.Value
-                });
+                foreach (CharAdditionalValue field in charData.Additions)
+                {
+                    additionalFields.Add(new
+                    {
+                        TypeId = field.AdditionalFieldTypeId,
+                        TypeName = field.AdditionalFieldType.Name,
+                        Value = field.Value
+                    });
+                }
             }
 
             var data = new {
@@ -86,8 +101,8 @@ namespace PlrAPI.Controllers
 
                 SocForms = socForms, Children = children, AltChars = altChars,
 
-                BioFather = charData.BioFather is not null ? new { Id = charData.BioFather.Id, Name = charData.BioFather.Name } : null,
-                BioMother = charData.BioMother is not null ? new { Id = charData.BioMother.Id, Name = charData.BioMother.Name } : null
+                BioFather = father is not null ? new { Id = father.Id, Name = father.Name } : null,
+                BioMother = mother is not null ? new { Id = mother.Id, Name = mother.Name } : null
             };
             return new JsonResult(data, _jsonOptions);
         }
