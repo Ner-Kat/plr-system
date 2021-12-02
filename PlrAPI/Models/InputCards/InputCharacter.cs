@@ -76,23 +76,23 @@ namespace PlrAPI.Models.InputCards
             Character character = new Character
             {
                 Name = this.Name,
-                AltNames = new List<string>(this.AltNames),
+                AltNames = this.AltNames is not null ? new List<string>(this.AltNames) : new List<string>(),
                 DateBirth = GetDateTime(this.DateBirth),
                 DateDeath = GetDateTime(this.DateDeath),
                 GenderId = this.GenderId,
                 LocBirthId = this.LocBirthId,
                 LocDeathId = this.LocDeathId,
                 RaceId = this.RaceId,
-                SocFormsId = new List<int>(this.SocFormsIds),
+                SocFormsId = this.SocFormsIds is not null ? new List<int>(this.SocFormsIds) : new List<int>(),
                 Growth = this.Growth,
                 BioFatherId = this.BioFatherId,
                 BioMotherId = this.BioMotherId,
-                ChildrenId = new List<int>(this.ChildrenIds),
-                Titles = new List<string>(this.Titles),
+                ChildrenId = this.ChildrenIds is not null ? new List<int>(this.ChildrenIds) : new List<int>(),
+                Titles = this.Titles is not null ? new List<string>(this.Titles) : new List<string>(),
                 ColorHair = this.ColorHair,
                 ColorEyes = this.ColorEyes,
                 Desc = this.Desc,
-                AltCharsId = new List<int>(this.AltCharsIds),
+                AltCharsId = this.AltCharsIds is not null ? new List<int>(this.AltCharsIds) : new List<int>(),
                 SocForms = socFormsfill(),
                 CharAdditionalValues = additionalFieldsFill()
             };

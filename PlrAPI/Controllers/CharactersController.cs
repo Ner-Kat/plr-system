@@ -230,15 +230,29 @@ namespace PlrAPI.Controllers
         private List<SocialFormation> GetSocForms(int[] indexes)
         {
             if (indexes != null)
-                return _db.SocialFormations.Where(sf => indexes.Contains(sf.Id)).OrderBy(sf => sf.Id).ToList();
-            else
-                return new List<SocialFormation>();
+            {
+                try
+                {
+                    return _db.SocialFormations.Where(sf => indexes.Contains(sf.Id)).OrderBy(sf => sf.Id).ToList();
+                }
+                catch (ArgumentNullException)
+                { }
+            }
+
+            return new List<SocialFormation>();
         }
 
         [NonAction]
         private List<CharAdditionalValue> FormAdditionals(Dictionary<string, string> newAdditions, int charId)
         {
-            var additions = _db.CharAdditionalValues.Where(cav => cav.CharacterId == charId).OrderBy(cav => cav.Id).ToList();
+            List<CharAdditionalValue> additions = new();
+
+            try
+            {
+                additions = _db.CharAdditionalValues.Where(cav => cav.CharacterId == charId).OrderBy(cav => cav.Id).ToList();
+            }
+            catch (ArgumentNullException)
+            { }
 
             foreach (var oldAdd in additions)
             {
@@ -258,25 +272,28 @@ namespace PlrAPI.Controllers
                 }
             }
 
-            // Добавление новых значений
-            foreach (var newAdd in newAdditions)
+            if (newAdditions is not null)
             {
-                var fieldType = _db.AdditionalFieldTypes.FirstOrDefault(aft => aft.Name == newAdd.Key);
-                CharAdditionalValue newAddEntry = null;
-
-                // Если поле такого типа уже существует
-                if (fieldType is not null)
+                // Добавление новых значений
+                foreach (var newAdd in newAdditions)
                 {
-                    newAddEntry = new CharAdditionalValue { AdditionalFieldTypeId = fieldType.Id, Value = newAdd.Value, CharacterId = charId };
-                }
-                // Если поле полностью новое
-                else
-                {
-                    fieldType = _db.AdditionalFieldTypes.Add(new AdditionalFieldType { Name = newAdd.Key }).Entity;
-                    newAddEntry = new CharAdditionalValue { AdditionalFieldTypeId = fieldType.Id, Value = newAdd.Value, CharacterId = charId };
-                }
+                    var fieldType = _db.AdditionalFieldTypes.FirstOrDefault(aft => aft.Name == newAdd.Key);
+                    CharAdditionalValue newAddEntry = null;
 
-                _db.CharAdditionalValues.Add(newAddEntry);
+                    // Если поле такого типа уже существует
+                    if (fieldType is not null)
+                    {
+                        newAddEntry = new CharAdditionalValue { AdditionalFieldTypeId = fieldType.Id, Value = newAdd.Value, CharacterId = charId };
+                    }
+                    // Если поле полностью новое
+                    else
+                    {
+                        fieldType = _db.AdditionalFieldTypes.Add(new AdditionalFieldType { Name = newAdd.Key }).Entity;
+                        newAddEntry = new CharAdditionalValue { AdditionalFieldTypeId = fieldType.Id, Value = newAdd.Value, CharacterId = charId };
+                    }
+
+                    _db.CharAdditionalValues.Add(newAddEntry);
+                }
             }
 
             _db.SaveChanges();
