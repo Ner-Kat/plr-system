@@ -156,9 +156,10 @@ namespace PlrAPI.Controllers
         [HttpPost]
         public IActionResult Change(InputCharacter character)
         {
+            _logger.LogInformation(character.DateBirth.ToString());
             try
             {
-                Character oldChar = _db.Characters.Where(c => c.Id == character.Id).FirstOrDefault();
+                Character oldChar = _db.Characters.Where(c => c.Id == character.Id).Include(c => c.SocForms).FirstOrDefault();
                 character.WriteIn(
                     oldChar, () => GetSocForms(character.SocFormsIds), () => FormAdditionals(character.Additions, character.Id)
                     );
@@ -166,7 +167,7 @@ namespace PlrAPI.Controllers
 
                 return Ok();
             }
-            catch
+            catch (Exception ex)
             {
                 return BadRequest();
             }
@@ -311,7 +312,7 @@ namespace PlrAPI.Controllers
                 }
             }
 
-            _db.SaveChanges();
+            // _db.SaveChanges();
             return additions;
         }
     }

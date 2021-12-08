@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using PlrAPI.Models.Database;
+using PlrAPI.Systems;
 
 namespace PlrAPI.Models.InputCards
 {
@@ -55,10 +56,12 @@ namespace PlrAPI.Models.InputCards
         public string[] Titles { get; set; }
 
         // Цвет волос персонажа.
-        public int? ColorHair { get; set; }
+        // public int? ColorHair { get; set; }
+        public string ColorHair { get; set; }
 
         // Цвет глаз персонажа.
-        public int? ColorEyes { get; set; }
+        // public int? ColorEyes { get; set; }
+        public string ColorEyes { get; set; }
 
         // Описание и биография персонажа.
         public string Desc { get; set; }
@@ -77,8 +80,8 @@ namespace PlrAPI.Models.InputCards
             {
                 Name = this.Name,
                 AltNames = this.AltNames is not null ? new List<string>(this.AltNames) : new List<string>(),
-                DateBirth = GetDateTime(this.DateBirth),
-                DateDeath = GetDateTime(this.DateDeath),
+                DateBirth = GetPlrDate(this.DateBirth),
+                DateDeath = GetPlrDate(this.DateDeath),
                 GenderId = this.GenderId,
                 LocBirthId = this.LocBirthId,
                 LocDeathId = this.LocDeathId,
@@ -126,6 +129,22 @@ namespace PlrAPI.Models.InputCards
             return dt;
         }
 
+        // Парсинг даты формата PlrDate из строки
+        private static string GetPlrDate(string dateStr)
+        {
+            PlrDate plrDate = null;
+
+            try
+            {
+                plrDate = new PlrDate(dateStr);
+                return plrDate.ToString();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         // Записать значения в объект Character (объект БД)
         public void WriteIn(Character character, Func<List<SocialFormation>> socFormsfill, Func<List<CharAdditionalValue>> additionalFieldsFill)
         {
@@ -136,10 +155,10 @@ namespace PlrAPI.Models.InputCards
                 character.AltNames = new List<string>(AltNames);
 
             if (DateBirth != null && !DateBirth.Equals(""))
-                character.DateBirth = GetDateTime(DateBirth);
+                character.DateBirth = GetPlrDate(DateBirth);
 
             if (DateDeath != null && !DateDeath.Equals(""))
-                character.DateDeath = GetDateTime(DateDeath);
+                character.DateDeath = GetPlrDate(DateDeath);
 
             if (GenderId.HasValue)
             {
@@ -201,10 +220,10 @@ namespace PlrAPI.Models.InputCards
             if (Titles != null)
                 character.Titles = new List<string>(Titles);
 
-            if (ColorHair.HasValue)
+            if (ColorHair is not null)
                 character.ColorHair = ColorHair;
 
-            if (ColorEyes.HasValue)
+            if (ColorEyes is not null)
                 character.ColorEyes = ColorEyes;
 
             if (Desc != null)
@@ -213,8 +232,10 @@ namespace PlrAPI.Models.InputCards
             if (AltCharsIds != null)
                 character.AltCharsId = new List<int>(AltCharsIds);
 
+            character.SocForms.Clear();
             character.SocForms = socFormsfill();
 
+            character.CharAdditionalValues.Clear();
             character.CharAdditionalValues = additionalFieldsFill();
         }
     }

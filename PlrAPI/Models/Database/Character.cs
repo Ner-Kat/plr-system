@@ -24,10 +24,12 @@ namespace PlrAPI.Models.Database
         public List<string> AltNames { get; set; }
 
         // Дата рождения персонажа.
-        public DateTime? DateBirth { get; set; }
+        // public DateTime? DateBirth { get; set; }
+        public string DateBirth { get; set; }
 
         // Дата смерти персонажа.
-        public DateTime? DateDeath { get; set; }
+        // public DateTime? DateDeath { get; set; }
+        public string DateDeath { get; set; }
 
         // Пол персонажа.
         [Required]
@@ -69,10 +71,12 @@ namespace PlrAPI.Models.Database
         public List<string> Titles { get; set; }
 
         // Цвет волос персонажа.
-        public int? ColorHair { get; set; }
+        // public int? ColorHair { get; set; }
+        public string ColorHair { get; set; }
 
         // Цвет глаз персонажа.
-        public int? ColorEyes { get; set; }
+        // public int? ColorEyes { get; set; }
+        public string ColorEyes { get; set; }
 
         // Описание и биография персонажа.
         public string Desc { get; set; }
