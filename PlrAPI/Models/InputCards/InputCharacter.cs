@@ -132,6 +132,9 @@ namespace PlrAPI.Models.InputCards
         // Парсинг даты формата PlrDate из строки
         private static string GetPlrDate(string dateStr)
         {
+            if (dateStr is null)
+                return null;
+
             PlrDate plrDate = null;
 
             try
@@ -154,11 +157,15 @@ namespace PlrAPI.Models.InputCards
             if (AltNames != null)
                 character.AltNames = new List<string>(AltNames);
 
-            if (DateBirth != null && !DateBirth.Equals(""))
+            if (DateBirth != null)
                 character.DateBirth = GetPlrDate(DateBirth);
+            else if (DateBirth.Equals(""))
+                character.DateBirth = null;
 
-            if (DateDeath != null && !DateDeath.Equals(""))
+            if (DateDeath != null)
                 character.DateDeath = GetPlrDate(DateDeath);
+            else if (DateDeath.Equals(""))
+                character.DateDeath = null;
 
             if (GenderId.HasValue)
             {

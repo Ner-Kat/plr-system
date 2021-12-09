@@ -138,6 +138,9 @@ namespace PlrAPI.Systems
         private static Date ParseToDate(string d)
         {
             var date = new Date();
+            if (d is null)
+                return date;
+
             if (d.StartsWith('-'))
             {
                 d = d[1..];

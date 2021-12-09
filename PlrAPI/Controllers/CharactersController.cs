@@ -143,6 +143,7 @@ namespace PlrAPI.Controllers
                     () => GetSocForms(character.SocFormsIds), () => FormAdditionals(character.Additions, character.Id)
                     );
                 _db.Characters.Add(addedChar);
+                _db.SaveChanges();
                 SetFamilyRelations(addedChar);
                 _db.SaveChanges();
 
