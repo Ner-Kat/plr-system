@@ -232,11 +232,17 @@ namespace PlrAPI.Models.InputCards
             if (AltCharsIds != null)
                 character.AltCharsId = new List<int>(AltCharsIds);
 
-            character.SocForms.Clear();
-            character.SocForms = socFormsfill();
+            if (character.SocForms is not null)
+            {
+                character.SocForms.Clear();
+                character.SocForms = socFormsfill();
+            }
 
-            character.CharAdditionalValues.Clear();
-            character.CharAdditionalValues = additionalFieldsFill();
+            if (character.CharAdditionalValues is not null)
+            {
+                character.CharAdditionalValues.Clear();
+                character.CharAdditionalValues = additionalFieldsFill();
+            }
         }
     }
 }

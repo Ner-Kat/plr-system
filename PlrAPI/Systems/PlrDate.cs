@@ -139,7 +139,10 @@ namespace PlrAPI.Systems
         {
             var date = new Date();
             if (d.StartsWith('-'))
+            {
+                d = d[1..];
                 date.After = false;
+            }
 
             string[] elems = d.Split('-');
             for (int i = 0; i < elems.Length; i++)

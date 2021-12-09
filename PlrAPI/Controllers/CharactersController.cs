@@ -139,9 +139,11 @@ namespace PlrAPI.Controllers
         {
             try
             {
-                _db.Characters.Add(character.ToCharacter(
+                Character addedChar = character.ToCharacter(
                     () => GetSocForms(character.SocFormsIds), () => FormAdditionals(character.Additions, character.Id)
-                    ));
+                    );
+                _db.Characters.Add(addedChar);
+                SetFamilyRelations(addedChar);
                 _db.SaveChanges();
 
                 return Ok();
@@ -156,13 +158,16 @@ namespace PlrAPI.Controllers
         [HttpPost]
         public IActionResult Change(InputCharacter character)
         {
-            _logger.LogInformation(character.DateBirth.ToString());
             try
             {
                 Character oldChar = _db.Characters.Where(c => c.Id == character.Id).Include(c => c.SocForms).FirstOrDefault();
+                int? oldFatherId = oldChar.BioFatherId;
+                int? oldMotherId = oldChar.BioMotherId;
+
                 character.WriteIn(
                     oldChar, () => GetSocForms(character.SocFormsIds), () => FormAdditionals(character.Additions, character.Id)
                     );
+                SetFamilyRelations(oldChar, oldFatherId, oldMotherId);
                 _db.SaveChanges();
 
                 return Ok();
@@ -314,6 +319,56 @@ namespace PlrAPI.Controllers
 
             // _db.SaveChanges();
             return additions;
+        }
+
+        private void SetFamilyRelations(Character c, int? oldFatherId = null, int? oldMotherId = null)
+        {
+            var chars = _db.Characters.Where(
+                chr => chr.Id == c.BioFatherId || chr.Id == c.BioMotherId
+                || chr.Id == oldFatherId || chr.Id == oldMotherId
+                ).ToList();
+
+            var father = chars.Where(chr => chr.Id == c.BioFatherId).FirstOrDefault();
+            var mother = chars.Where(chr => chr.Id == c.BioMotherId).FirstOrDefault();
+            var oldFather = chars.Where(chr => chr.Id == oldFatherId).FirstOrDefault();
+            var oldMother = chars.Where(chr => chr.Id == oldMotherId).FirstOrDefault();
+
+            // Если отец изменился
+            if (father != oldFather)
+            {
+                // Удалить у старого отца (если он есть) текущего ребёнка
+                if (oldFather is not null && oldFather.ChildrenId is not null && oldFather.ChildrenId.Contains(c.Id))
+                    oldFather.ChildrenId.Remove(c.Id);
+            }
+
+            // Если отец указан и не равен старому отцу (отец изменился и он есть)
+            if (father is not null && father != oldFather)
+            {
+                // Добавить новому отцу текущего ребёнка
+                if (father.ChildrenId is not null)
+                    father.ChildrenId.Add(c.Id);
+                else
+                    father.ChildrenId = new() { c.Id };
+            }
+
+
+            // Если мать изменилась
+            if (mother != oldMother)
+            {
+                // Удалить у старой матери (если она есть) текущего ребёнка
+                if (oldMother is not null && oldMother.ChildrenId is not null && oldMother.ChildrenId.Contains(c.Id))
+                    oldMother.ChildrenId.Remove(c.Id);
+            }
+
+            // Если мать указана и не равна старой матери (мать изменилась и она есть)
+            if (mother is not null && mother != oldMother)
+            {
+                // Добавить новой матери текущего ребёнка
+                if (mother.ChildrenId is not null)
+                    mother.ChildrenId.Add(c.Id);
+                else
+                    mother.ChildrenId = new() { c.Id };
+            }
         }
     }
 }
