@@ -19,7 +19,7 @@ namespace PlrAPI.Systems
         const string Key = "iakPcq'g?xE%q9!Cd#@w$!";
 
         // Время жизни токена (в минутах)
-        public const int Lifetime = 2;
+        public const int Lifetime = 10;  // 2
 
         // Размер соли (байт)
         public const int SaltSize = 32;
