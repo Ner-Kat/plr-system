@@ -145,6 +145,7 @@ namespace PlrAPI.Controllers
                 _db.Characters.Add(addedChar);
                 _db.SaveChanges();
                 SetFamilyRelations(addedChar);
+                SetAltCharsRelations(addedChar, null);
                 _db.SaveChanges();
 
                 return Ok();
@@ -164,11 +165,13 @@ namespace PlrAPI.Controllers
                 Character oldChar = _db.Characters.Where(c => c.Id == character.Id).Include(c => c.SocForms).FirstOrDefault();
                 int? oldFatherId = oldChar.BioFatherId;
                 int? oldMotherId = oldChar.BioMotherId;
+                List<int> oldAltChars = oldChar.AltCharsId;
 
                 character.WriteIn(
                     oldChar, () => GetSocForms(character.SocFormsIds), () => FormAdditionals(character.Additions, character.Id)
                     );
                 SetFamilyRelations(oldChar, oldFatherId, oldMotherId);
+                SetAltCharsRelations(oldChar, oldAltChars);
                 _db.SaveChanges();
 
                 return Ok();
@@ -369,6 +372,46 @@ namespace PlrAPI.Controllers
                     mother.ChildrenId.Add(c.Id);
                 else
                     mother.ChildrenId = new() { c.Id };
+            }
+        }
+
+        private void SetAltCharsRelations(Character chr, List<int> oldAltCharsIds)
+        {
+            if (oldAltCharsIds is null)
+                oldAltCharsIds = new();
+
+            // Список отсутствующих
+            List<int> altCharsToAdd = new();
+            if (chr.AltCharsId is not null && chr.AltCharsId.Count > 0)
+            {
+                foreach (int id in chr.AltCharsId)
+                {
+                    if (!oldAltCharsIds.Contains(id))
+                        altCharsToAdd.Add(id);
+                }
+            }
+
+            // Список удалённых
+            List<int> altCharsToDel = new();
+            if (chr.AltCharsId is not null && oldAltCharsIds.Count > 0)
+            {
+                foreach (int id in oldAltCharsIds)
+                {
+                    if (!chr.AltCharsId.Contains(id))
+                        altCharsToDel.Add(id);
+                }
+            }
+
+            // Загрузка всех затронутых персонажей
+            var allAltChars = _db.Characters.Where(chr => altCharsToAdd.Contains(chr.Id) || altCharsToDel.Contains(chr.Id)).ToList();
+            
+            // Выполнение требований
+            foreach (var character in allAltChars)
+            {
+                if (altCharsToAdd.Contains(character.Id))
+                    character.AltCharsId.Add(chr.Id);
+                else if (altCharsToDel.Contains(character.Id))
+                    character.AltCharsId.Remove(chr.Id);
             }
         }
     }
